@@ -15,18 +15,9 @@
 // 53=Thriller, 10751=Family, 9648=Mystery
 
 // ---------- TypeScript Interface ----------
-// This defines the shape of each mood object.
-// Every mood MUST have these fields.
-export interface MoodConfig {
-  key: string; // Unique ID used in URLs (e.g. "laugh")
-  label: string; // What the user sees on the card
-  description: string; // Short description below the label
-  genres: number[]; // TMDB genre IDs to include
-  excludeGenres?: number[]; // TMDB genre IDs to exclude (optional)
-  sortBy: "popularity.desc" | "vote_average.desc"; // How to sort results
-  voteCountGte: number; // Minimum number of votes (filters out obscure films)
-  voteAverageGte?: number; // Minimum rating out of 10 (optional)
-}
+// MoodConfig is now defined in lib/types.ts (our shared types file)
+// so it can be reused across multiple files.
+import type { MoodConfig } from "@/lib/types";
 
 // ---------- The Mapping Table ----------
 // Record<string, MoodConfig> means: an object where every key is a string

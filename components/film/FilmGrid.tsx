@@ -12,21 +12,11 @@
 // If there are no films, it shows a friendly message.
 
 import FilmCard from "./FilmCard";
-
-// ---------- Film Interface ----------
-// This matches the shape of each film object from the TMDB API response.
-// Note: TMDB uses snake_case (poster_path), not camelCase (posterPath).
-interface Film {
-  id: number;
-  title: string;
-  poster_path: string | null;
-  release_date: string;
-  vote_average: number;
-  overview: string;
-}
+import type { Film } from "@/lib/types";
 
 // ---------- Props ----------
 // The parent passes in the array of films.
+// Film type is imported from lib/types.ts (our shared types file)
 interface FilmGridProps {
   films: Film[];
 }
