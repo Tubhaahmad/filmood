@@ -10,7 +10,8 @@ export default function Home() {
         The movie is a mood.
       </p>
       <p className="text-white/40 max-w-md mb-10">
-        Tell Filmood how you want to feel. It tells you what to watch — alone or as a group.
+        Tell Filmood how you want to feel. It tells you what to watch — alone or
+        as a group.
       </p>
       <Link
         href="/mood"
