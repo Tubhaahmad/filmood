@@ -17,7 +17,7 @@ export default function SignupPage() {
 
   // Field-level errors from Zod validation
   const [fieldErrors, setFieldErrors] = useState<
-    Partial<Record<keyof SignupFormData, string[]>>
+    Partial<Record<string, string[]>>
   >({});
 
   // General error from Supabase (e.g. "User already exists")
@@ -45,8 +45,6 @@ export default function SignupPage() {
     const result = signupSchema.safeParse(formData);
 
     if (!result.success) {
-      // flatten() turns nested Zod errors into a simple object:
-      // { fieldErrors: { email: ["msg"], password: ["msg"] } }
       setFieldErrors(result.error.flatten().fieldErrors);
       return; // Stop here — don't call Supabase
     }
@@ -74,7 +72,7 @@ export default function SignupPage() {
     // Success! Show message and redirect
     setSuccess(true);
     setTimeout(() => {
-      router.push("/mood");
+      router.push("/login");
     }, 2000);
   };
 
