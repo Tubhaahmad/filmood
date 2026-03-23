@@ -17,3 +17,41 @@ export interface MoodConfig {
   voteCountGte: number;
   voteAverageGte?: number;
 }
+
+// ─── Film Detail Types ─────────────────────────────
+
+/** Full movie data returned by TMDB /movie/{id}?append_to_response=credits */
+export interface FilmDetail {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  runtime: number | null;
+  vote_average: number;
+  genres: { id: number; name: string }[];
+  credits: {
+    cast: {
+      id: number;
+      name: string;
+      character: string;
+      profile_path: string | null;
+    }[];
+  };
+}
+
+/** A single streaming provider (e.g. Netflix, Viaplay) */
+export interface Provider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+
+/** A YouTube trailer from TMDB /movie/{id}/videos */
+export interface TrailerData {
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+}
