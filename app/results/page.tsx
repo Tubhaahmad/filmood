@@ -1,14 +1,3 @@
-// =============================================
-// RESULTS PAGE — /results?mood=laugh
-// =============================================
-// This page:
-// 1. Reads the "mood" from the URL (e.g. ?mood=laugh)
-// 2. Calls our /api/movies/discover API route
-// 3. Shows the films in a grid using FilmGrid
-//
-// "use client" is needed because we use useState, useEffect, and useSearchParams
-// (these only work in the browser, not on the server)
-
 "use client";
 
 import { useSearchParams } from "next/navigation";

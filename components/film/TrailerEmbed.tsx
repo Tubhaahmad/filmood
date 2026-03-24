@@ -1,0 +1,30 @@
+// TrailerEmbed.tsx
+// Embeds a YouTube trailer using the TrailerData type
+
+import type { TrailerData } from "@/lib/types";
+
+interface TrailerEmbedProps {
+  trailer: TrailerData | null;
+}
+
+export default function TrailerEmbed({ trailer }: TrailerEmbedProps) {
+  if (!trailer || trailer.site !== "YouTube") {
+    return (
+      <div className="w-full aspect-video bg-gray-800 flex items-center justify-center rounded-lg">
+        <span className="text-gray-400">No trailer available</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full aspect-video rounded-lg overflow-hidden shadow-lg">
+      <iframe
+        src={`https://www.youtube.com/embed/${trailer.key}`}
+        title={trailer.name}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="w-full h-full border-0"
+      />
+    </div>
+  );
+}
