@@ -1,26 +1,118 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --bg: #0e0b0b;
+  --bg2: #130f0f;
+  --bg3: #181212;
+  --surface: #1c1414;
+  --surface2: #231717;
+
+  /* Accent — Ember Red */
+  --red: #d94f3a;
+  --red-soft: #e8705d;
+  --red-dim: #b84030;
+  --red-glow: rgba(217, 79, 58, 0.16);
+  --red-glow2: rgba(217, 79, 58, 0.07);
+
+  /* Text hierarchy */
+  --text: #f0e8e6;
+  --text2: #a89490;
+  --text3: #6b504c;
+
+  /* Borders */
+  --border: rgba(220, 80, 60, 0.11);
+  --border2: rgba(220, 80, 60, 0.22);
+
+  /* Fonts */
+  --serif: var(--font-serif), Georgia, serif;
+  --sans: var(--font-sans), system-ui, sans-serif;
+
+  /* Radius */
+  --r: 12px;
+  --r-lg: 20px;
+
+  /* Shadows */
+  --shadow-btn: 0 0 28px rgba(217, 79, 58, 0.32), 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-btn-hover:
+    0 0 44px rgba(217, 79, 58, 0.48), 0 6px 22px rgba(0, 0, 0, 0.5);
+  --shadow-card:
+    0 16px 40px rgba(0, 0, 0, 0.5), 0 0 18px rgba(217, 79, 58, 0.16);
+  --shadow-focus: 0 0 0 3px rgba(217, 79, 58, 0.16);
+
+  /* Stagger delays */
+  --d1: 80ms;
+  --d2: 180ms;
+  --d3: 280ms;
+  --d4: 380ms;
+  --d5: 480ms;
+
+  /* Transitions */
+  --t-fast: 0.2s ease;
+  --t-base: 0.25s ease;
+  --t-slow: 0.3s ease;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Ambient radial-gradient background — fixed so it doesn't scroll */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 55% 45% at 12% 18%,
+      rgba(217, 79, 58, 0.065),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 55% at 88% 75%,
+      rgba(217, 79, 58, 0.045),
+      transparent 70%
+    );
+  pointer-events: none;
+  z-index: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
