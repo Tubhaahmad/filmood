@@ -4,17 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import FilmGrid from "@/components/film/FilmGrid";
 import Link from "next/link";
-
-// ---------- Film type ----------
-// Matches the TMDB response shape
-interface Film {
-  id: number;
-  title: string;
-  poster_path: string | null;
-  release_date: string;
-  vote_average: number;
-  overview: string;
-}
+import type { Film } from "@/lib/types";
 
 // ---------- Inner component ----------
 // useSearchParams() must be wrapped in <Suspense> in Next.js App Router
