@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 import { signupSchema, type SignupFormData } from "@/lib/validations";
 
 export default function SignupPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // If the user is already logged in, redirect to mood page
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/mood");
+    }
+  }, [user, authLoading, router]);
+
   // Form fields: what the user has typed so far
   const [formData, setFormData] = useState<SignupFormData>({
     name: "",
@@ -28,9 +39,6 @@ export default function SignupPage() {
 
   // Loading state — prevents double-clicking the submit button
   const [loading, setLoading] = useState(false);
-
-  // Router for navigation after successful signup
-  const router = useRouter();
 
   // ---------- Form Submit Handler ----------
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,12 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 import { loginSchema, type LoginFormData } from "@/lib/validations";
 
 export default function LoginPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // If the user is already logged in, redirect to mood page
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/mood");
+    }
+  }, [user, authLoading, router]);
+
   //  State
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
@@ -23,8 +34,6 @@ export default function LoginPage() {
 
   // Loading state
   const [loading, setLoading] = useState(false);
-
-  const router = useRouter();
 
   // ---------- Form Submit Handler ----------
   const handleSubmit = async (e: React.FormEvent) => {
