@@ -1,28 +1,58 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════
+   Dark theme (default)
+   ═══════════════════════════════════════════════════════════ */
 :root {
   /* Backgrounds */
-  --bg: #0e0b0b;
-  --bg2: #130f0f;
-  --bg3: #181212;
-  --surface: #1c1414;
-  --surface2: #231717;
-
-  /* Accent — Ember Red */
-  --red: #d94f3a;
-  --red-soft: #e8705d;
-  --red-dim: #b84030;
-  --red-glow: rgba(217, 79, 58, 0.16);
-  --red-glow2: rgba(217, 79, 58, 0.07);
+  --bg: #0a0a0c;
+  --surface: #131316;
+  --surface2: #1a1a1f;
+  --surface3: #222228;
 
   /* Text hierarchy */
-  --text: #f0e8e6;
-  --text2: #a89490;
-  --text3: #6b504c;
+  --t1: #f0efe8;
+  --t2: #9e9e9a;
+  --t3: #5c5c58;
 
   /* Borders */
-  --border: rgba(220, 80, 60, 0.11);
-  --border2: rgba(220, 80, 60, 0.22);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-h: rgba(255, 255, 255, 0.12);
+  --border-active: rgba(255, 255, 255, 0.20);
+
+  /* Tags */
+  --tag-bg: rgba(255, 255, 255, 0.06);
+  --tag-border: rgba(255, 255, 255, 0.08);
+
+  /* Accents — gold */
+  --gold: #c4a35a;
+  --gold-soft: rgba(196, 163, 90, 0.10);
+  --gold-glow: rgba(196, 163, 90, 0.08);
+
+  /* Accents — blue */
+  --blue: #5b8fd4;
+  --blue-soft: rgba(91, 143, 212, 0.10);
+  --blue-glow: rgba(91, 143, 212, 0.08);
+
+  /* Accents — rose */
+  --rose: #c46b7c;
+  --rose-soft: rgba(196, 107, 124, 0.10);
+  --rose-glow: rgba(196, 107, 124, 0.08);
+
+  /* Accents — violet */
+  --violet: #8b6cc4;
+  --violet-soft: rgba(139, 108, 196, 0.10);
+  --violet-glow: rgba(139, 108, 196, 0.08);
+
+  /* Accents — teal */
+  --teal: #5aaa8f;
+  --teal-soft: rgba(90, 170, 143, 0.10);
+  --teal-glow: rgba(90, 170, 143, 0.08);
+
+  /* Accents — ember */
+  --ember: #d47a4a;
+  --ember-soft: rgba(212, 122, 74, 0.10);
+  --ember-glow: rgba(212, 122, 74, 0.08);
 
   /* Fonts */
   --serif: var(--font-serif), Georgia, serif;
@@ -31,14 +61,6 @@
   /* Radius */
   --r: 12px;
   --r-lg: 20px;
-
-  /* Shadows */
-  --shadow-btn: 0 0 28px rgba(217, 79, 58, 0.32), 0 4px 14px rgba(0, 0, 0, 0.4);
-  --shadow-btn-hover:
-    0 0 44px rgba(217, 79, 58, 0.48), 0 6px 22px rgba(0, 0, 0, 0.5);
-  --shadow-card:
-    0 16px 40px rgba(0, 0, 0, 0.5), 0 0 18px rgba(217, 79, 58, 0.16);
-  --shadow-focus: 0 0 0 3px rgba(217, 79, 58, 0.16);
 
   /* Stagger delays */
   --d1: 80ms;
@@ -53,26 +75,54 @@
   --t-slow: 0.3s ease;
 }
 
-/* Ambient radial-gradient background — fixed so it doesn't scroll */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(
-      ellipse 55% 45% at 12% 18%,
-      rgba(217, 79, 58, 0.065),
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 40% 55% at 88% 75%,
-      rgba(217, 79, 58, 0.045),
-      transparent 70%
-    );
-  pointer-events: none;
-  z-index: 0;
+/* ═══════════════════════════════════════════════════════════
+   Light theme
+   ═══════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg: #f4f3ee;
+  --surface: #ffffff;
+  --surface2: #f0efe8;
+  --surface3: #e8e7e0;
+
+  --t1: #1a1a18;
+  --t2: #6e6e6a;
+  --t3: #a0a09a;
+
+  --border: rgba(0, 0, 0, 0.07);
+  --border-h: rgba(0, 0, 0, 0.14);
+  --border-active: rgba(0, 0, 0, 0.22);
+
+  --tag-bg: rgba(0, 0, 0, 0.04);
+  --tag-border: rgba(0, 0, 0, 0.08);
+
+  --gold: #9a7d30;
+  --gold-soft: rgba(154, 125, 48, 0.10);
+  --gold-glow: rgba(154, 125, 48, 0.08);
+
+  --blue: #3a6fb8;
+  --blue-soft: rgba(58, 111, 184, 0.10);
+  --blue-glow: rgba(58, 111, 184, 0.08);
+
+  --rose: #a84858;
+  --rose-soft: rgba(168, 72, 88, 0.10);
+  --rose-glow: rgba(168, 72, 88, 0.08);
+
+  --violet: #6a4ea8;
+  --violet-soft: rgba(106, 78, 168, 0.10);
+  --violet-glow: rgba(106, 78, 168, 0.08);
+
+  --teal: #3a8a70;
+  --teal-soft: rgba(58, 138, 112, 0.10);
+  --teal-glow: rgba(58, 138, 112, 0.08);
+
+  --ember: #b05a2a;
+  --ember-soft: rgba(176, 90, 42, 0.10);
+  --ember-glow: rgba(176, 90, 42, 0.08);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Keyframes
+   ═══════════════════════════════════════════════════════════ */
 @keyframes fadeUp {
   0% {
     opacity: 0;
@@ -106,10 +156,21 @@ body::before {
 @keyframes slideUp {
   0% {
     opacity: 0;
-    transform: translateX(-50%) translateY(100px);
+    transform: translateY(100px);
   }
   100% {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    max-height: 0;
+    opacity: 0;
+  }
+  100% {
+    max-height: 1200px;
+    opacity: 1;
   }
 }
