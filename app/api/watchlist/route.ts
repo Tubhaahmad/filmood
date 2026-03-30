@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin, getAuthUser } from "@/lib/supabase-server";
+import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
 
 // GET /api/watchlist
 // Returns all saved films for the logged-in user, newest first.
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Step 2: Query the watchlists table — only rows belonging to this user
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from("watchlists")
     .select("*")
     .eq("user_id", user.id)

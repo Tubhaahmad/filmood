@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" className={`${lora.variable} ${jakarta.variable}`}>
+    <html lang="en" data-theme="dark" suppressHydrationWarning className={`${lora.variable} ${jakarta.variable}`}>
       <head>
         {/* Apply saved theme before paint to prevent flash */}
         <script

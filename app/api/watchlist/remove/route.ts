@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin, getAuthUser } from "@/lib/supabase-server";
+import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
 
 // DELETE /api/watchlist/remove
 // Removes a film from the user's watchlist.
@@ -21,7 +21,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   // Delete only the row matching this user + this movie
-  const { error } = await supabaseAdmin
+  const { error } = await getSupabaseAdmin()
     .from("watchlists")
     .delete()
     .eq("user_id", user.id)

@@ -1,12 +1,21 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 
-// Server-side Supabase client using the service role key.
-// This has full database access — only used inside API routes, never in the browser.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+// Lazy singleton — avoids crashing during Next.js static page collection
+// when env vars aren't available yet. The client is only created on first use.
+let _supabaseAdmin: SupabaseClient | null = null;
 
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+export function getSupabaseAdmin() {
+  if (!_supabaseAdmin) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) {
+      throw new Error("Missing Supabase env vars");
+    }
+    _supabaseAdmin = createClient(url, key);
+  }
+  return _supabaseAdmin;
+}
 
 // Reads the Authorization header from an incoming request,
 // extracts the Bearer token, and asks Supabase to verify it.
@@ -24,7 +33,7 @@ export async function getAuthUser(request: NextRequest) {
   const {
     data: { user },
     error,
-  } = await supabaseAdmin.auth.getUser(token);
+  } = await getSupabaseAdmin().auth.getUser(token);
 
   if (error || !user) {
     return null;
