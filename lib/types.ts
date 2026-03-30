@@ -7,10 +7,13 @@ export interface Film {
   overview: string;
 }
 
+export type AccentColor = "gold" | "blue" | "rose" | "violet" | "teal" | "ember";
+
 export interface MoodConfig {
   key: string;
   label: string;
   description: string;
+  accentColor: AccentColor;
   genres: number[];
   excludeGenres?: number[];
   sortBy: "popularity.desc" | "vote_average.desc";

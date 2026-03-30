@@ -2,18 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import AuthProvider from "../components/AuthProvider";
-import { DM_Serif_Display, DM_Sans } from "next/font/google";
+import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 
-const dmSerif = DM_Serif_Display({
+const lora = Lora({
   subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-serif",
 });
 
-const dmSans = DM_Sans({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   variable: "--font-sans",
 });
 
@@ -29,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`dark ${dmSerif.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${lora.variable} ${jakarta.variable}`}>
       <body className="antialiased">
         <AuthProvider>
           <Navbar />
