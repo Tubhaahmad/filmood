@@ -1,35 +1,17 @@
-// =============================================
-// DISCOVER API ROUTE — /api/movies/discover
-// =============================================
-// This is a Next.js API route (server-side only).
-// It receives a mood key from the frontend, builds TMDB query params,
-// calls the TMDB API, and returns the top 12 matching films.
-//
-// Example: GET /api/movies/discover?mood=laugh
-//
-// Why server-side?
-// → The TMDB API key (process.env.TMDB_API_KEY) stays on the server.
-// → The browser never sees it — only the results.
-
 import { NextRequest, NextResponse } from "next/server";
-import { buildTMDBParams } from "@/lib/moodMap";
+import { buildTMDBParams, moodMap } from "@/lib/moodMap";
 
-// GET handler — Next.js calls this when someone visits /api/movies/discover
 export async function GET(request: NextRequest) {
-  // 1. Read the "mood" query parameter from the URL
-  //    e.g. /api/movies/discover?mood=laugh → mood = "laugh"
   const { searchParams } = new URL(request.url);
-  const mood = searchParams.get("mood");
+  const moodParam = searchParams.get("mood");
 
-  // 2. If no mood was provided, return an error
-  if (!mood) {
+  if (!moodParam) {
     return NextResponse.json(
       { error: "Missing 'mood' query parameter" },
       { status: 400 }
     );
   }
 
-  // 3. Get the TMDB API key from environment variables
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
@@ -38,31 +20,54 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Support comma-separated moods: ?mood=laugh,escape
+  const moodKeys = moodParam.split(",").filter((k) => k in moodMap);
+  if (moodKeys.length === 0) {
+    return NextResponse.json(
+      { error: "No valid moods provided" },
+      { status: 400 }
+    );
+  }
+
   try {
-    // 4. Use buildTMDBParams() from moodMap.ts to convert the mood
-    //    into TMDB query parameters
-    //    e.g. "laugh" → { with_genres: "35", sort_by: "popularity.desc", ... }
-    const moodParams = buildTMDBParams(mood);
+    // Fetch results for each mood in parallel
+    const fetches = moodKeys.map(async (key) => {
+      const moodParams = buildTMDBParams(key);
+      const url = new URL("https://api.themoviedb.org/3/discover/movie");
+      url.searchParams.set("api_key", apiKey);
+      url.searchParams.set("language", "en-US");
+      url.searchParams.set("page", "1");
 
-    // 5. Build the full TMDB API URL
-    const url = new URL("https://api.themoviedb.org/3/discover/movie");
-    url.searchParams.set("api_key", apiKey);
-    url.searchParams.set("language", "en-US");
-    url.searchParams.set("page", "1");
+      for (const [k, v] of Object.entries(moodParams)) {
+        url.searchParams.set(k, v);
+      }
 
-    // 6. Add all mood-specific params to the URL
-    for (const [key, value] of Object.entries(moodParams)) {
-      url.searchParams.set(key, value);
-    }
+      const res = await fetch(url.toString());
+      const data = await res.json();
+      return data.results ?? [];
+    });
 
-    // 7. Call TMDB
-    const response = await fetch(url.toString());
-    const data = await response.json();
+    const allResults = await Promise.all(fetches);
 
-    // 8. Return only the first 12 films (curated, not a long scroll)
-    const films = data.results?.slice(0, 12) ?? [];
+    // Merge and deduplicate by movie ID, keep first occurrence
+    const seen = new Set<number>();
+    const films = allResults
+      .flat()
+      .filter((film: { id: number }) => {
+        if (seen.has(film.id)) return false;
+        seen.add(film.id);
+        return true;
+      })
+      .slice(0, 20);
 
-    return NextResponse.json({ mood, films, total: films.length });
+    const labels = moodKeys.map((k) => moodMap[k].label);
+
+    return NextResponse.json({
+      mood: moodParam,
+      moods: labels,
+      films,
+      total: films.length,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to fetch films";

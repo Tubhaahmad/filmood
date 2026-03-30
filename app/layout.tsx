@@ -28,7 +28,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${lora.variable} ${jakarta.variable}`}>
+    <html lang="en" data-theme="dark" className={`${lora.variable} ${jakarta.variable}`}>
+      <head>
+        {/* Apply saved theme before paint to prevent flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="antialiased">
         <AuthProvider>
           <Navbar />

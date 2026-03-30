@@ -6,20 +6,15 @@ import FilmGrid from "@/components/film/FilmGrid";
 import Link from "next/link";
 import type { Film } from "@/lib/types";
 
-// ---------- Inner component ----------
-// useSearchParams() must be wrapped in <Suspense> in Next.js App Router
 function ResultsContent() {
-  // Read ?mood=laugh from the URL
   const searchParams = useSearchParams();
   const mood = searchParams.get("mood");
 
-  // State: films array, loading flag, error message
   const [films, setFilms] = useState<Film[]>([]);
+  const [moods, setMoods] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect runs ONCE when the page loads (or when mood changes)
-  // It calls our API route and stores the films in state
   useEffect(() => {
     if (!mood) {
       setLoading(false);
@@ -28,13 +23,13 @@ function ResultsContent() {
 
     const fetchFilms = async () => {
       try {
-        // Call OUR API route (not TMDB directly — keeps key hidden)
         const res = await fetch(`/api/movies/discover?mood=${mood}`);
         const data = await res.json();
 
         if (data.error) throw new Error(data.error);
 
         setFilms(data.films);
+        setMoods(data.moods || [mood]);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load films");
       } finally {
@@ -45,52 +40,57 @@ function ResultsContent() {
     fetchFilms();
   }, [mood]);
 
-  // ---------- Render ----------
-
-  // No mood in URL
   if (!mood) {
     return (
       <div className="text-center py-20">
-        <p className="text-white/50 mb-4">No mood selected.</p>
-        <Link href="/mood" className="text-white underline">
+        <p style={{ color: "var(--t2)" }} className="mb-4">No mood selected.</p>
+        <Link href="/" style={{ color: "var(--t1)", textDecoration: "underline" }}>
           Pick a mood first
         </Link>
       </div>
     );
   }
 
-  // Loading state
   if (loading) {
-    return <p className="text-white/50 py-12">Loading films...</p>;
+    return <p style={{ color: "var(--t2)" }} className="py-12">Loading films...</p>;
   }
 
-  // Error state
   if (error) {
-    return <p className="text-red-400 py-12">{error}</p>;
+    return <p style={{ color: "var(--rose)" }} className="py-12">{error}</p>;
   }
 
-  // Success — show the films!
   return (
     <>
-      <h1 className="text-3xl font-bold text-white mb-2">Your Matches</h1>
-      <p className="text-white/50 mb-8">Mood: {mood}</p>
+      <h1
+        className="font-serif mb-2"
+        style={{ fontSize: "28px", fontWeight: 600, color: "var(--t1)" }}
+      >
+        Your Matches
+      </h1>
+      <p style={{ color: "var(--t2)", marginBottom: "32px" }}>
+        {moods.length > 1
+          ? `Moods: ${moods.join(" + ")}`
+          : `Mood: ${moods[0]}`}
+      </p>
       <FilmGrid films={films} />
       <Link
-        href="/mood"
-        className="mt-8 text-white/50 hover:text-white transition underline text-sm"
+        href="/"
+        className="mt-8 text-sm"
+        style={{ color: "var(--t2)", textDecoration: "underline" }}
       >
-        ← Try a different mood
+        ← Try different moods
       </Link>
     </>
   );
 }
 
-// ---------- Page component ----------
-// Wraps ResultsContent in Suspense (required by Next.js for useSearchParams)
 export default function ResultsPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center px-4 pt-24 pb-12 bg-black">
-      <Suspense fallback={<p className="text-white/50">Loading...</p>}>
+    <main
+      className="flex min-h-screen flex-col items-center px-4 pt-24 pb-12"
+      style={{ background: "var(--bg)" }}
+    >
+      <Suspense fallback={<p style={{ color: "var(--t2)" }}>Loading...</p>}>
         <ResultsContent />
       </Suspense>
     </main>

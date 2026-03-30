@@ -11,6 +11,7 @@ export type AccentColor = "gold" | "blue" | "rose" | "violet" | "teal" | "ember"
 
 export interface MoodConfig {
   key: string;
+  tagLabel: string;
   label: string;
   description: string;
   accentColor: AccentColor;
