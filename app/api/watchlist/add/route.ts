@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin, getAuthUser } from "@/lib/supabase-server";
+import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
 
 // POST /api/watchlist/add
 // Saves a film to the user's watchlist.
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Check if this film is already in the user's watchlist
-  const { data: existing } = await supabaseAdmin
+  const { data: existing } = await getSupabaseAdmin()
     .from("watchlists")
     .select("id")
     .eq("user_id", user.id)
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Insert the new watchlist entry
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from("watchlists")
     .insert({
       user_id: user.id,
