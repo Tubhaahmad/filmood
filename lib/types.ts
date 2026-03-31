@@ -59,3 +59,47 @@ export interface TrailerData {
   site: string;
   type: string;
 }
+
+// ─── Group Session Types ──────────────────────────────
+
+export type SessionStatus = "lobby" | "mood" | "swiping" | "done";
+export type SwipeVote = "yes" | "no" | "maybe";
+
+/** A group session row from the sessions table */
+export interface GroupSession {
+  id: string;
+  code: string;
+  host_id: string;
+  status: SessionStatus;
+  movie_deck: Film[] | null;
+  created_at: string;
+}
+
+/** A participant row from session_participants */
+export interface SessionParticipant {
+  id: string;
+  session_id: string;
+  user_id: string | null;
+  nickname: string;
+  mood_selections: string[] | null;
+  has_swiped: boolean;
+  joined_at: string;
+}
+
+/** A swipe vote row from the swipes table */
+export interface Swipe {
+  id: string;
+  session_id: string;
+  participant_id: string;
+  movie_id: number;
+  vote: SwipeVote;
+  created_at: string;
+}
+
+/** Movie with its match score for the results page */
+export interface MatchResult {
+  movie: Film;
+  score: number;
+  votes: { participant_id: string; vote: SwipeVote }[];
+  tier: "perfect" | "strong" | "miss";
+}
