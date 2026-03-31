@@ -11,10 +11,10 @@ export default function SignupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
-  // If the user is already logged in, redirect to mood page
+  // If the user is already logged in, redirect to dashboard
   useEffect(() => {
     if (!authLoading && user) {
-      router.push("/mood");
+      router.push("/");
     }
   }, [user, authLoading, router]);
 

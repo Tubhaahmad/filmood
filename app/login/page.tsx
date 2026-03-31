@@ -14,7 +14,7 @@ export default function LoginPage() {
   // If the user is already logged in, redirect to mood page
   useEffect(() => {
     if (!authLoading && user) {
-      router.push("/mood");
+      router.push("/");
     }
   }, [user, authLoading, router]);
 
@@ -67,8 +67,8 @@ export default function LoginPage() {
       return;
     }
 
-    // Success — redirect to mood page
-    router.push("/mood");
+    // Success — redirect to dashboard
+    router.push("/");
   };
 
   return (
