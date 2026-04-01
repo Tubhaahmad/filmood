@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import SessionCreator from "@/components/group/SessionCreator";
 import SessionJoin from "@/components/group/SessionJoin";
 
 type Tab = "create" | "join";
 
-export default function GroupPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("create");
+function GroupPageContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const codeParam = searchParams.get("code");
+
+  const [activeTab, setActiveTab] = useState<Tab>(
+    tabParam === "join" ? "join" : "create",
+  );
 
   return (
     <main
@@ -84,13 +92,26 @@ export default function GroupPage() {
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
-            borderRadius: "16px",
+            borderRadius: "var(--r-lg)",
             padding: "8px 20px",
+            animation: "fadeUp 0.4s ease both",
           }}
         >
-          {activeTab === "create" ? <SessionCreator /> : <SessionJoin />}
+          {activeTab === "create" ? (
+            <SessionCreator />
+          ) : (
+            <SessionJoin initialCode={codeParam ?? ""} />
+          )}
         </div>
       </div>
     </main>
+  );
+}
+
+export default function GroupPage() {
+  return (
+    <Suspense>
+      <GroupPageContent />
+    </Suspense>
   );
 }

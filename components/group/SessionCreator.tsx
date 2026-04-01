@@ -68,7 +68,7 @@ export default function SessionCreator() {
           className="font-sans"
           style={{
             padding: "10px 24px",
-            borderRadius: "10px",
+            borderRadius: "var(--r)",
             background: "var(--gold)",
             color: "#000",
             fontSize: "14px",
@@ -101,10 +101,11 @@ export default function SessionCreator() {
             letterSpacing: "6px",
             color: "var(--gold)",
             background: "var(--surface2)",
-            border: "1px solid var(--border)",
-            borderRadius: "12px",
+            border: `1px solid ${copied ? "var(--gold)" : "var(--border)"}`,
+            borderRadius: "var(--r)",
             padding: "16px 32px",
-            transition: "all 0.2s",
+            transition: "all var(--t-base)",
+            boxShadow: copied ? "0 0 20px var(--gold-glow)" : "none",
           }}
         >
           {code}
@@ -114,7 +115,7 @@ export default function SessionCreator() {
           style={{
             fontSize: "12px",
             color: copied ? "var(--gold)" : "var(--t3)",
-            transition: "color 0.2s",
+            transition: "color var(--t-fast)",
           }}
         >
           {copied ? "Copied!" : "Click code to copy"}
@@ -125,13 +126,13 @@ export default function SessionCreator() {
           className="cursor-pointer font-sans"
           style={{
             padding: "12px 32px",
-            borderRadius: "10px",
+            borderRadius: "var(--r)",
             background: "var(--gold)",
             color: "#000",
             fontSize: "14px",
             fontWeight: 600,
             border: "none",
-            transition: "opacity 0.2s",
+            transition: "opacity var(--t-fast)",
           }}
         >
           Go to lobby
@@ -165,13 +166,13 @@ export default function SessionCreator() {
         className="cursor-pointer font-sans"
         style={{
           padding: "12px 32px",
-          borderRadius: "10px",
+          borderRadius: "var(--r)",
           background: loading ? "var(--surface2)" : "var(--gold)",
           color: loading ? "var(--t3)" : "#000",
           fontSize: "14px",
           fontWeight: 600,
           border: "none",
-          transition: "all 0.2s",
+          transition: "all var(--t-base)",
           opacity: loading ? 0.7 : 1,
         }}
       >
