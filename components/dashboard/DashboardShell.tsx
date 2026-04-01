@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import MoodBox from "./MoodBox";
 import MoodPanel from "./MoodPanel";
+import SearchBox from "./SearchBox";
 
 export default function DashboardShell() {
   const [selectedMoods, setSelectedMoods] = useState<Set<string>>(new Set());
@@ -36,6 +37,10 @@ export default function DashboardShell() {
           onExpand={() => togglePanel("mood")}
           isExpanded={openPanel === "mood"}
         />
+
+        <div className="min-[900px]:col-start-3">
+          <SearchBox />
+        </div>
       </div>
 
       <div style={{ padding: "0 28px" }}>
