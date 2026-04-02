@@ -102,13 +102,15 @@ export default function SearchBox({
   }, [query, searchType]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <section
-      className="relative overflow-hidden"
+      onClick={onExpand}
+      className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
-        border: "1px solid var(--border-active)",
+        border: `1px solid ${isExpanded ? "var(--border-active)" : "var(--border)"}`,
         borderRadius: "16px",
         padding: "22px",
-        boxShadow: "0 0 0 1px var(--border-active)",
+        transition: "border-color 0.3s, box-shadow 0.3s",
+        boxShadow: isExpanded ? "0 0 0 1px var(--border-active)" : "none",
         minHeight: "100%",
       }}
     >
@@ -149,7 +151,7 @@ export default function SearchBox({
         Search by film title, actor, or director.
       </p>
 
-      <div className="relative mb-3.5">
+      <div className="relative mb-3.5" onClick={(e) => e.stopPropagation()}>
         <FiSearch
           className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
           style={{ color: "var(--t3)" }}
@@ -182,7 +184,7 @@ export default function SearchBox({
         )}
       </div>
 
-      <div className="mb-4.5 flex flex-wrap gap-2">
+      <div className="mb-4.5 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
         {browseTags.map((tag) => (
           <button
             key={tag.type}
