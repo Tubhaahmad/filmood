@@ -4,6 +4,8 @@ import { useState, useCallback } from "react";
 import MoodBox from "./MoodBox";
 import MoodPanel from "./MoodPanel";
 import SearchBox from "./SearchBox";
+import ExploreBox from "./ExploreBox";
+import ExplorePanel from "./ExplorePanel";
 
 export default function DashboardShell() {
   const [selectedMoods, setSelectedMoods] = useState<Set<string>>(new Set());
@@ -41,6 +43,10 @@ export default function DashboardShell() {
         <div className="min-[900px]:col-start-3">
           <SearchBox />
         </div>
+        <ExploreBox
+          onExpand={() => togglePanel("explore")}
+          isExpanded={openPanel === "explore"}
+        />
       </div>
 
       <div style={{ padding: "0 28px" }}>
@@ -48,6 +54,10 @@ export default function DashboardShell() {
           isOpen={openPanel === "mood"}
           selectedMoods={selectedMoods}
           onSelectMood={handleSelectMood}
+          onClose={() => setOpenPanel(null)}
+        />
+        <ExplorePanel
+          isOpen={openPanel === "explore"}
           onClose={() => setOpenPanel(null)}
         />
       </div>
