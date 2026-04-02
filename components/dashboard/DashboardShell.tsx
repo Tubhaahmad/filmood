@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import MoodBox from "./MoodBox";
 import MoodPanel from "./MoodPanel";
+import SearchBox from "./SearchBox";
 import ExploreBox from "./ExploreBox";
 import ExplorePanel from "./ExplorePanel";
 
@@ -38,6 +39,10 @@ export default function DashboardShell() {
           onExpand={() => togglePanel("mood")}
           isExpanded={openPanel === "mood"}
         />
+
+        <div className="min-[900px]:col-start-3">
+          <SearchBox />
+        </div>
         <ExploreBox
           onExpand={() => togglePanel("explore")}
           isExpanded={openPanel === "explore"}
