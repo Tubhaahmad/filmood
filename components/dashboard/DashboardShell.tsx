@@ -5,6 +5,8 @@ import MoodBox from "./MoodBox";
 import MoodPanel from "./MoodPanel";
 import SearchBox from "./SearchBox";
 import SearchPanel from "./SearchPanel";
+import ExploreBox from "./ExploreBox";
+import ExplorePanel from "./ExplorePanel";
 import type { Film } from "@/lib/types";
 
 export default function DashboardShell() {
@@ -55,6 +57,10 @@ export default function DashboardShell() {
             isExpanded={openPanel === "search"}
           />
         </div>
+        <ExploreBox
+          onExpand={() => togglePanel("explore")}
+          isExpanded={openPanel === "explore"}
+        />
       </div>
 
       <div style={{ padding: "0 28px" }}>
@@ -67,6 +73,10 @@ export default function DashboardShell() {
         <SearchPanel
           isOpen={openPanel === "search"}
           films={searchResults}
+          onClose={() => setOpenPanel(null)}
+        />
+        <ExplorePanel
+          isOpen={openPanel === "explore"}
           onClose={() => setOpenPanel(null)}
         />
       </div>
