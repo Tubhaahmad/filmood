@@ -4,12 +4,15 @@ import { useState, useCallback } from "react";
 import MoodBox from "./MoodBox";
 import MoodPanel from "./MoodPanel";
 import SearchBox from "./SearchBox";
+import SearchPanel from "./SearchPanel";
 import ExploreBox from "./ExploreBox";
 import ExplorePanel from "./ExplorePanel";
+import type { Film } from "@/lib/types";
 
 export default function DashboardShell() {
   const [selectedMoods, setSelectedMoods] = useState<Set<string>>(new Set());
   const [openPanel, setOpenPanel] = useState<string | null>(null);
+  const [searchResults, setSearchResults] = useState<Film[]>([]);
 
   const handleSelectMood = useCallback((key: string) => {
     setSelectedMoods((prev) => {
@@ -27,6 +30,13 @@ export default function DashboardShell() {
     setOpenPanel((prev) => (prev === panel ? null : panel));
   };
 
+  const handleSearchResults = useCallback((films: Film[]) => {
+    setSearchResults(films);
+    if (films.length === 0) {
+      setOpenPanel((prev) => (prev === "search" ? null : prev));
+    }
+  }, []);
+
   return (
     <div className="mx-auto" style={{ maxWidth: "1400px" }}>
       <div
@@ -41,7 +51,11 @@ export default function DashboardShell() {
         />
 
         <div className="min-[900px]:col-start-3">
-          <SearchBox />
+          <SearchBox
+            onResults={handleSearchResults}
+            onExpand={() => togglePanel("search")}
+            isExpanded={openPanel === "search"}
+          />
         </div>
         <ExploreBox
           onExpand={() => togglePanel("explore")}
@@ -54,6 +68,11 @@ export default function DashboardShell() {
           isOpen={openPanel === "mood"}
           selectedMoods={selectedMoods}
           onSelectMood={handleSelectMood}
+          onClose={() => setOpenPanel(null)}
+        />
+        <SearchPanel
+          isOpen={openPanel === "search"}
+          films={searchResults}
           onClose={() => setOpenPanel(null)}
         />
         <ExplorePanel
