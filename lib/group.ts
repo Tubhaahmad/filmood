@@ -4,7 +4,8 @@ import { getSupabaseAdmin } from "@/lib/supabase-server";
 // Excluded: 0/O (zero vs oh), 1/I/L (one vs I vs L)
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 const CODE_LENGTH = 6;
-const MAX_PARTICIPANTS = 8;
+const MAX_PARTICIPANTS = 10;
+const SESSION_EXPIRY_HOURS = 4;
 
 /** Generate a random 6-char code like "HK7T4N" */
 function generateCode(): string {
@@ -37,4 +38,11 @@ export async function generateUniqueCode(): Promise<string> {
   throw new Error("Failed to generate unique code");
 }
 
-export { MAX_PARTICIPANTS };
+/** Check if a session has passed the expiry window */
+function isSessionExpired(createdAt: string): boolean {
+  const created = new Date(createdAt).getTime();
+  const now = Date.now();
+  return now - created > SESSION_EXPIRY_HOURS * 60 * 60 * 1000;
+}
+
+export { MAX_PARTICIPANTS, SESSION_EXPIRY_HOURS, isSessionExpired };

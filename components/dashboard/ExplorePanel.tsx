@@ -117,9 +117,9 @@ export default function ExplorePanel({ isOpen, onClose }: ExplorePanelProps) {
         </div>
 
         {/* Steps */}
-        <div className="flex flex-col gap-[16px]" style={{ marginBottom: "24px" }}>
+        <div className="flex flex-col gap-4" style={{ marginBottom: "24px" }}>
           {steps.map((step) => (
-            <div key={step.num} className="flex items-start gap-[12px]">
+            <div key={step.num} className="flex items-start gap-3">
               {/* Step number */}
               <div
                 style={{
@@ -173,7 +173,7 @@ export default function ExplorePanel({ isOpen, onClose }: ExplorePanelProps) {
             style={{ borderTop: "1px solid var(--border)", paddingTop: "16px" }}
           >
             {!joinMode ? (
-              <div className="flex items-center gap-[10px] flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <button
                   onClick={handleCreate}
                   className="cursor-pointer font-sans"
@@ -244,8 +244,8 @@ export default function ExplorePanel({ isOpen, onClose }: ExplorePanelProps) {
               </div>
             ) : (
               // Join code input
-              <div className="flex flex-col gap-[10px]">
-                <div className="flex gap-[8px]">
+              <div className="flex flex-col gap-2.5">
+                <div className="flex gap-2">
                   <input
                     type="text"
                     value={joinCode}
@@ -364,7 +364,7 @@ export default function ExplorePanel({ isOpen, onClose }: ExplorePanelProps) {
               a guest.
             </p>
 
-            <div className="flex items-center gap-[10px] flex-wrap">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <button
                 onClick={() => router.push("/signup")}
                 className="cursor-pointer font-sans"
