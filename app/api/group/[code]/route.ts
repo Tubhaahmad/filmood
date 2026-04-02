@@ -46,7 +46,7 @@ export async function GET(
     // Fetch participants ordered by join time (host will be first)
     const { data: participants, error: participantsError } = await supabase
       .from("session_participants")
-      .select("id, nickname, user_id, joined_at")
+      .select("id, nickname, user_id, is_ready, joined_at")
       .eq("session_id", session.id)
       .order("joined_at", { ascending: true });
 

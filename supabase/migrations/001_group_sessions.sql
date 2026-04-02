@@ -1,6 +1,7 @@
 -- ============================================================
 -- Filmood Stage 2 — Group Session Tables
 -- Run this in Supabase SQL Editor (Dashboard > SQL Editor > New Query)
+-- This table already exists in Supabase. File kept for documentation.
 -- ============================================================
 
 -- 1. SESSIONS

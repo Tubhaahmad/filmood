@@ -175,3 +175,144 @@
     opacity: 1;
   }
 }
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes ambientDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translate(-20px, 15px) scale(0.95);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+}
+
+@keyframes grainShift {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2%, -3%); }
+  30% { transform: translate(3%, 1%); }
+  50% { transform: translate(-1%, 3%); }
+  70% { transform: translate(2%, -2%); }
+  90% { transform: translate(-3%, 1%); }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--teal-glow), 0 0 60px transparent;
+  }
+  50% {
+    box-shadow: 0 0 25px var(--teal-glow), 0 0 80px var(--teal-glow);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Lobby — Cinematic Lounge
+   ═══════════════════════════════════════════════════════════ */
+
+/* Film grain overlay — subtle texture across the whole lobby */
+.lobby-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px;
+  animation: grainShift 8s steps(6) infinite;
+}
+
+[data-theme="light"] .lobby-grain::before {
+  opacity: 0.03;
+}
+
+/* Ambient background glow — the teal "projector light" effect */
+.lobby-ambient {
+  position: fixed;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, var(--teal-glow) 0%, transparent 70%);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+  animation: ambientDrift 12s ease-in-out infinite;
+}
+
+[data-theme="light"] .lobby-ambient {
+  opacity: 0.2;
+}
+
+/* Stagger delays for lobby sections */
+.lobby-section-1 { animation: fadeUp 0.5s ease both; animation-delay: 0ms; }
+.lobby-section-2 { animation: fadeUp 0.5s ease both; animation-delay: 120ms; }
+.lobby-section-3 { animation: fadeUp 0.5s ease both; animation-delay: 240ms; }
+.lobby-section-4 { animation: fadeUp 0.5s ease both; animation-delay: 360ms; }
+.lobby-section-5 { animation: fadeUp 0.5s ease both; animation-delay: 480ms; }
+
+/* Activity feed fade mask — top edge fades out */
+.lobby-feed-mask {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Lobby — Responsive
+   ═══════════════════════════════════════════════════════════ */
+
+/* Tablet (<=900px) */
+@media (max-width: 900px) {
+  .lobby-ambient {
+    width: 450px;
+    height: 300px;
+  }
+}
+
+/* Mobile (<=500px) */
+@media (max-width: 500px) {
+  .lobby-ambient {
+    width: 320px;
+    height: 220px;
+    top: -80px;
+  }
+
+  /* Stack the how-it-works steps vertically on small screens */
+  .lobby-steps {
+    flex-direction: column;
+  }
+}
