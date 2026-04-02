@@ -85,7 +85,7 @@ export default function ExploreBox({ onExpand, isExpanded }: ExploreBoxProps) {
 
       {/* Explore items */}
       <div
-        className="flex flex-col gap-[8px] mb-[10px]"
+        className="flex flex-col gap-2 mb-2.5"
         onClick={(e) => e.stopPropagation()}
       >
         {exploreItems.map((item) => (
@@ -157,7 +157,7 @@ export default function ExploreBox({ onExpand, isExpanded }: ExploreBoxProps) {
           e.stopPropagation();
           onExpand();
         }}
-        className="flex w-full items-center justify-center gap-[6px] cursor-pointer"
+        className="flex w-full items-center justify-center gap-1.5 cursor-pointer"
         style={{
           padding: "9px",
           borderRadius: "10px",

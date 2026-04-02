@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
-import { MAX_PARTICIPANTS } from "@/lib/group";
+import { MAX_PARTICIPANTS, isSessionExpired } from "@/lib/group";
 
 // POST /api/group/join
 // Joins an existing group session by code.
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     // Find the session
     const { data: session, error: sessionError } = await supabase
       .from("sessions")
-      .select("id, status")
+      .select("id, status, created_at")
       .eq("code", upperCode)
       .single();
 
@@ -52,6 +52,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Session not found. Check the code and try again." },
         { status: 404 },
+      );
+    }
+
+    if (isSessionExpired(session.created_at)) {
+      return NextResponse.json(
+        { error: "Session expired" },
+        { status: 410 },
       );
     }
 
