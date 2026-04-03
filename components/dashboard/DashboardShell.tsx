@@ -49,17 +49,14 @@ export default function DashboardShell() {
           onExpand={() => togglePanel("mood")}
           isExpanded={openPanel === "mood"}
         />
-
-        <div className="min-[900px]:col-start-3">
-          <SearchBox
-            onResults={handleSearchResults}
-            onExpand={() => togglePanel("search")}
-            isExpanded={openPanel === "search"}
-          />
-        </div>
         <ExploreBox
           onExpand={() => togglePanel("explore")}
           isExpanded={openPanel === "explore"}
+        />
+        <SearchBox
+          onResults={handleSearchResults}
+          onExpand={() => togglePanel("search")}
+          isExpanded={openPanel === "search"}
         />
       </div>
 
