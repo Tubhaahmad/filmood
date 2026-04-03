@@ -60,15 +60,25 @@ export async function POST(
       );
     }
 
-    // Need at least 2 participants
-    const { count } = await supabase
+    // Need at least 2 participants, and al
+    const { data: allParticipants } = await supabase
       .from("session_participants")
-      .select("id", { count: "exact", head: true })
+      .select("id, is_ready")
       .eq("session_id", session.id);
 
-    if (count === null || count < 2) {
+    const count = allParticipants?.length ?? 0;
+
+    if (count < 2) {
       return NextResponse.json(
         { error: "Need at least 2 participants to start" },
+        { status: 400 },
+      );
+    }
+
+    const notReady = allParticipants!.filter((p) => !p.is_ready);
+    if (notReady.length > 0) {
+      return NextResponse.json(
+        { error: `${notReady.length} participant${notReady.length > 1 ? "s" : ""} not ready yet` },
         { status: 400 },
       );
     }

@@ -83,6 +83,7 @@ export interface SessionParticipant {
   nickname: string;
   mood_selections: string[] | null;
   has_swiped: boolean;
+  is_ready: boolean;
   joined_at: string;
 }
 
