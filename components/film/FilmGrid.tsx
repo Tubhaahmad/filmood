@@ -14,33 +14,23 @@
 import FilmCard from "./FilmCard";
 import type { Film } from "@/lib/types";
 
-// ---------- Props ----------
-// The parent passes in the array of films.
-// Film type is imported from lib/types.ts (our shared types file)
 interface FilmGridProps {
   films: Film[];
+  accentBase?: string;
 }
 
-export default function FilmGrid({ films }: FilmGridProps) {
-  // If no films match the mood, show a message instead of an empty grid
+export default function FilmGrid({ films, accentBase }: FilmGridProps) {
   if (films.length === 0) {
     return (
-      <p className="text-center text-white/50 py-12">
+      <p className="text-center py-12 text-t-2">
         No films found. Try a different mood!
       </p>
     );
   }
 
   return (
-    // Tailwind responsive grid:
-    // grid-cols-2 → 2 columns on mobile
-    // sm:grid-cols-3 → 3 columns on screens ≥640px
-    // lg:grid-cols-4 → 4 columns on screens ≥1024px
-    // gap-4 → spacing between cards
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-5 lg:gap-6">
       {films.map((film) => (
-        // For each film, render a FilmCard.
-        // We map TMDB's snake_case fields to FilmCard's camelCase props.
         <FilmCard
           key={film.id}
           id={film.id}
@@ -49,6 +39,7 @@ export default function FilmGrid({ films }: FilmGridProps) {
           releaseDate={film.release_date}
           voteAverage={film.vote_average}
           overview={film.overview}
+          accentBase={accentBase}
         />
       ))}
     </div>
