@@ -20,12 +20,13 @@ import Link from "next/link";
 // These are the values the parent component must pass in.
 // They come directly from the TMDB API response.
 interface FilmCardProps {
-  id: number; // TMDB movie ID (used for the link)
-  title: string; // Film title
-  posterPath: string | null; // TMDB poster path (e.g. "/abc123.jpg") — can be null
-  releaseDate: string; // e.g. "2024-05-15"
-  voteAverage: number; // Rating out of 10 (e.g. 7.8)
-  overview: string; // Short film description
+  id: number;
+  title: string;
+  posterPath: string | null;
+  releaseDate: string;
+  voteAverage: number;
+  overview: string;
+  accentBase?: string;
 }
 
 export default function FilmCard({
@@ -35,46 +36,115 @@ export default function FilmCard({
   releaseDate,
   voteAverage,
   overview,
+  accentBase,
 }: FilmCardProps) {
-  // Extract just the year from "2024-05-15" → 2024
   const year = releaseDate ? new Date(releaseDate).getFullYear() : "N/A";
-
-  // Round rating to 1 decimal: 7.812 → "7.8"
-  const rating = voteAverage?.toFixed(1);
+  const rating = voteAverage?.toFixed(1) ?? "N/A";
+  const accent = accentBase ?? "var(--gold)";
 
   return (
-    // The whole card is a link to the film detail page
-    <Link href={`/film/${id}`} className="group">
-      <div className="rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 transition-all duration-200">
-        {/* ---------- Poster Image ---------- */}
-        {/* aspect-[2/3] keeps the movie poster ratio (portrait) */}
-        <div className="relative aspect-[2/3] bg-white/10">
+    <Link
+      href={`/film/${id}`}
+      className="group"
+      style={{ textDecoration: "none" }}
+    >
+      <div
+        style={{
+          borderRadius: "var(--r)",
+          overflow: "hidden",
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          transition:
+            "border-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast)",
+        }}
+        onMouseEnter={(e) => {
+          const card = e.currentTarget as HTMLDivElement;
+          card.style.borderColor = accent;
+          card.style.transform = "translateY(-2px)";
+          card.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)";
+        }}
+        onMouseLeave={(e) => {
+          const card = e.currentTarget as HTMLDivElement;
+          card.style.borderColor = "var(--border)";
+          card.style.transform = "none";
+          card.style.boxShadow = "none";
+        }}
+      >
+        <div
+          className="relative aspect-[2/3]"
+          style={{ background: "var(--surface2)" }}
+        >
           {posterPath ? (
             <Image
               src={`https://image.tmdb.org/t/p/w500${posterPath}`}
               alt={title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover"
+              style={{ transition: "transform var(--t-slow)" }}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           ) : (
-            // Fallback when TMDB has no poster for this film
-            <div className="w-full h-full flex items-center justify-center text-white/30">
+            <div
+              className="w-full h-full flex items-center justify-center"
+              style={{ color: "var(--t3)", fontSize: "12px" }}
+            >
               No Poster
             </div>
           )}
+
+          <div
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "5px 9px",
+              borderRadius: "999px",
+              fontSize: "11px",
+              fontWeight: 700,
+              lineHeight: 1,
+              color: "#FFD84D",
+              background: "rgba(10,10,12,0.82)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.24)",
+              zIndex: 2,
+            }}
+          >
+            ★ {rating}
+          </div>
         </div>
 
-        {/* ---------- Film Info ---------- */}
-        <div className="p-3">
-          {/* truncate: cuts off long titles with "..." */}
-          <h3 className="text-white font-semibold text-sm truncate">{title}</h3>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-white/50 text-xs">{year}</span>
-            <span className="text-yellow-400 text-xs">★ {rating}</span>
+        <div style={{ padding: "10px 12px 12px" }}>
+          <h3
+            className="truncate"
+            style={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "var(--t1)",
+              margin: 0,
+              marginBottom: "6px",
+            }}
+          >
+            {title}
+          </h3>
+
+          <div className="flex items-center gap-2">
+            <span style={{ fontSize: "11px", color: "var(--t3)" }}>{year}</span>
           </div>
-          {/* line-clamp-2: shows max 2 lines of overview text */}
-          <p className="text-white/40 text-xs mt-2 line-clamp-2">{overview}</p>
+
+          <p
+            className="line-clamp-2"
+            style={{
+              fontSize: "11px",
+              color: "var(--t2)",
+              marginTop: "6px",
+              lineHeight: "1.5",
+            }}
+          >
+            {overview}
+          </p>
         </div>
       </div>
     </Link>
