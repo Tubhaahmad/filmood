@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FiSearch } from "react-icons/fi";
 import type { Film } from "@/lib/types";
 
 type SearchType = "title" | "actor" | "director";
@@ -152,10 +151,19 @@ export default function SearchBox({
       </p>
 
       <div className="relative mb-3.5" onClick={(e) => e.stopPropagation()}>
-        <FiSearch
+        <svg
           className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
           style={{ color: "var(--t3)" }}
-        />
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
         <input
           type="text"
           value={query}

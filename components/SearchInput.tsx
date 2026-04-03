@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { FiSearch, FiX } from "react-icons/fi";
 import type { Film } from "@/lib/types";
 
 type FilterType = "title" | "actor" | "director";
@@ -64,9 +63,18 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
     <div className="w-full max-w-2xl mx-auto flex flex-col gap-4">
       {/* Search Input */}
       <div className="relative flex items-center">
-        <FiSearch
+        <svg
           className="absolute left-4 text-gray-400 w-5 h-5 pointer-events-none"
-        />
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 24 24"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
         <input
           type="text"
           value={query}
@@ -84,7 +92,10 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
             className="absolute right-4 text-gray-400 hover:text-white transition-colors"
             aria-label="Clear search"
           >
-            <FiX className="w-4 h-4" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         )}
         {/* Loading spinner */}
