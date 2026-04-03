@@ -1,36 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useAuth } from "./AuthProvider";
 
+function getThemeSnapshot(): "dark" | "light" {
+  return document.documentElement.getAttribute("data-theme") === "light"
+    ? "light"
+    : "dark";
+}
+
+function getServerSnapshot(): "dark" | "light" {
+  return "dark";
+}
+
+function subscribeToTheme(callback: () => void) {
+  const observer = new MutationObserver(callback);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
+
 function useTheme() {
-  // Always start "dark" to match server-rendered HTML (data-theme="dark").
-  // The inline script in layout.tsx may have already flipped the DOM to "light",
-  // so we sync from the DOM after mount to avoid a hydration mismatch.
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    if (current === "light") setTheme("light");
-    setMounted(true);
-  }, []);
-
+  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerSnapshot);
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
-    setTheme(next);
   };
 
-  return { theme, toggle, mounted };
+  return { theme, toggle };
 }
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
-  const { theme, toggle: toggleTheme, mounted } = useTheme();
+  const { theme, toggle: toggleTheme } = useTheme();
 
   return (
     <nav
@@ -49,7 +56,7 @@ export default function Navbar() {
         Filmood
       </Link>
 
-      <div className="hidden md:flex items-center gap-[10px]">
+      <div className="hidden md:flex items-center gap-2.5">
         <button
           onClick={toggleTheme}
           className="flex items-center justify-center cursor-pointer"
@@ -65,11 +72,11 @@ export default function Navbar() {
           }}
           title="Toggle theme"
         >
-          {!mounted || theme === "dark" ? "☾" : "☀"}
+          {theme === "dark" ? "☾" : "☀"}
         </button>
 
         {!loading && !user && (
-          <div className="flex gap-[6px]">
+          <div className="flex gap-1.5">
             <Link
               href="/login"
               className="no-underline"
@@ -103,7 +110,7 @@ export default function Navbar() {
         )}
 
         {!loading && user && (
-          <div className="flex items-center gap-[10px]">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={signOut}
               className="cursor-pointer"
@@ -141,7 +148,7 @@ export default function Navbar() {
 
       {isOpen && (
         <div
-          className="absolute left-0 right-0 top-full flex flex-col items-end gap-[16px] md:hidden"
+          className="absolute left-0 right-0 top-full flex flex-col items-end gap-4 md:hidden"
           style={{ padding: "20px 28px", background: "var(--bg)", borderBottom: "1px solid var(--border)" }}
         >
           <button
@@ -149,7 +156,7 @@ export default function Navbar() {
             className="cursor-pointer"
             style={{ fontSize: "14px", color: "var(--t2)", background: "none", border: "none" }}
           >
-            {!mounted || theme === "dark" ? "☾ Dark" : "☀ Light"}
+            {theme === "dark" ? "☾ Dark" : "☀ Light"}
           </button>
           {!loading && !user && (
             <>

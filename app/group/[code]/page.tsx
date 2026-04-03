@@ -7,8 +7,8 @@ import { supabase } from "@/lib/supabase";
 import ParticipantList from "@/components/group/ParticipantList";
 import LobbyActions from "@/components/group/LobbyActions";
 import InviteStrip from "@/components/group/InviteStrip";
-import ActivityFeed from "@/components/group/ActivityFeed";
-import type { ActivityEvent } from "@/components/group/ActivityFeed";
+import ToastContainer from "@/components/group/Toast";
+import { useToasts } from "@/components/group/useToasts";
 
 interface SessionData {
   id: string;
@@ -38,16 +38,18 @@ export default function LobbyPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [elapsed, setElapsed] = useState("");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [participantId, setParticipantId] = useState<string | null>(null);
   const prevParticipantsRef = useRef<Participant[]>([]);
+  const redirectingRef = useRef(false);
+  const { toasts, addToast } = useToasts();
 
-  const participantId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("participantId")
-      : null;
+  useEffect(() => {
+    const stored = localStorage.getItem("participantId");
+    if (stored) setParticipantId(stored);
+  }, []);
 
   const isHost = user ? user.id === sessionData?.host_id : false;
 
@@ -63,57 +65,42 @@ export default function LobbyPage() {
     return p.id === participantId;
   })?.is_ready ?? false;
 
-  const addEvent = useCallback(
-    (type: ActivityEvent["type"], nickname: string) => {
-      setEvents((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}-${Math.random()}`,
-          type,
-          nickname,
-          timestamp: Date.now(),
-        },
-      ]);
-    },
-    [],
-  );
-
+  // Diff participants to show toasts
   const diffParticipants = useCallback(
     (prev: Participant[], next: Participant[]) => {
-      if (prev.length === 0 && next.length > 0) {
-        const host = next.find((p) => p.user_id !== null);
-        if (host) {
-          addEvent("created", host.nickname);
-        }
-        return;
-      }
+      if (prev.length === 0) return;
 
       const prevIds = new Set(prev.map((p) => p.id));
       const nextIds = new Set(next.map((p) => p.id));
 
       for (const p of next) {
         if (!prevIds.has(p.id)) {
-          addEvent("join", p.nickname);
+          addToast(`${p.nickname} joined`, "var(--teal)");
         }
       }
 
       for (const p of prev) {
         if (!nextIds.has(p.id)) {
-          addEvent("leave", p.nickname);
+          addToast(`${p.nickname} left`, "var(--rose)");
         }
       }
 
       for (const p of next) {
         const old = prev.find((o) => o.id === p.id);
         if (old && old.is_ready !== p.is_ready) {
-          addEvent(p.is_ready ? "ready" : "unready", p.nickname);
+          addToast(
+            p.is_ready ? `${p.nickname} is ready` : `${p.nickname} unreadied`,
+            "var(--teal)",
+          );
         }
       }
     },
-    [addEvent],
+    [addToast],
   );
 
   const fetchLobby = useCallback(async () => {
+    if (redirectingRef.current) return;
+
     try {
       const res = await fetch(`/api/group/${code}`);
       const data = await res.json();
@@ -129,16 +116,16 @@ export default function LobbyPage() {
       prevParticipantsRef.current = data.participants;
       setParticipants(data.participants);
 
-      if (data.session.status === "mood") {
-        router.replace(`/group/${code}/mood`);
-        return;
-      }
-      if (data.session.status === "swiping") {
-        router.replace(`/group/${code}/swipe`);
-        return;
-      }
-      if (data.session.status === "done") {
-        router.replace(`/group/${code}/results`);
+      // Handle status transitions
+      const status = data.session.status;
+      if (status === "mood" || status === "swiping" || status === "done") {
+        redirectingRef.current = true;
+        const target = status === "mood"
+          ? `/group/${code}/mood`
+          : status === "swiping"
+            ? `/group/${code}/swipe`
+            : `/group/${code}/results`;
+        router.replace(target);
         return;
       }
     } catch {
@@ -151,18 +138,21 @@ export default function LobbyPage() {
   const fetchLobbyRef = useRef(fetchLobby);
   fetchLobbyRef.current = fetchLobby;
 
+  // Initial fetch
   useEffect(() => {
     if (!authLoading) {
       fetchLobby();
     }
   }, [authLoading, fetchLobby]);
 
+  // Store sessionId for Realtime subscriptions
   useEffect(() => {
     if (sessionData && !sessionId) {
       setSessionId(sessionData.id);
     }
   }, [sessionData, sessionId]);
 
+  // Realtime subscriptions
   useEffect(() => {
     if (!sessionId) return;
 
@@ -197,13 +187,7 @@ export default function LobbyPage() {
             router.replace("/group");
             return;
           }
-
-          if (payload.eventType === "UPDATE" && payload.new) {
-            const newStatus = (payload.new as { status: string }).status;
-            if (newStatus === "mood") {
-              router.replace(`/group/${code}/mood`);
-            }
-          }
+          fetchLobbyRef.current();
         },
       )
       .subscribe();
@@ -214,6 +198,16 @@ export default function LobbyPage() {
     };
   }, [sessionId, code, router]);
 
+  // Polling fallback every 2s
+  useEffect(() => {
+    if (loading) return;
+    const interval = setInterval(() => {
+      fetchLobbyRef.current();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  // Session timer
   useEffect(() => {
     if (!sessionData) return;
 
@@ -228,6 +222,16 @@ export default function LobbyPage() {
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [sessionData]);
+
+  // Contextual subtitle based on state
+  const getSubtitle = () => {
+    if (!isInSession) return "Enter the code to join this session";
+    if (participants.length < 2) return "Share the code and invite your friends";
+    if (allReady && isHost) return "Everyone is ready \u2014 start when you want";
+    if (allReady) return "Everyone is ready \u2014 waiting for host to start";
+    const readyCount = participants.filter((p) => p.is_ready).length;
+    return `${participants.length} joined \u2014 ${readyCount} of ${participants.length} ready`;
+  };
 
   // Loading state
   if (loading || authLoading) {
@@ -296,8 +300,8 @@ export default function LobbyPage() {
     );
   }
 
-  const fillPercent = (participants.length / MAX_PARTICIPANTS) * 100;
   const readyCount = participants.filter((p) => p.is_ready).length;
+  const fillPercent = (participants.length / MAX_PARTICIPANTS) * 100;
 
   return (
     <main
@@ -309,20 +313,19 @@ export default function LobbyPage() {
         overflow: "hidden",
       }}
     >
-      {/* Ambient projector glow */}
       <div className="lobby-ambient" />
+      <ToastContainer toasts={toasts} />
 
-      {/* Content */}
       <div
         className="mx-auto"
         style={{
-          maxWidth: "560px",
+          maxWidth: "520px",
           padding: "48px 20px 60px",
           position: "relative",
           zIndex: 2,
         }}
       >
-        {/* Header */}
+        {/* Hero — heading + subtitle */}
         <div className="lobby-section-1 text-center" style={{ marginBottom: "8px" }}>
           <h1
             className="font-serif"
@@ -338,42 +341,21 @@ export default function LobbyPage() {
           </h1>
           <p
             className="font-sans"
-            style={{
-              fontSize: "14px",
-              color: "var(--t2)",
-              lineHeight: 1.5,
-            }}
+            style={{ fontSize: "14px", color: "var(--t2)", lineHeight: 1.5 }}
           >
-            {isHost
-              ? "Share the code and start when everyone is ready"
-              : "Mark yourself ready and wait for the host"}
+            {getSubtitle()}
           </p>
         </div>
 
-        {/* Session timer */}
+        {/* Hero — session code */}
         <div
-          className="lobby-section-1 text-center"
-          style={{ marginBottom: "32px" }}
+          className="lobby-section-2"
+          style={{ marginBottom: "28px", marginTop: "20px" }}
         >
-          <span
-            className="font-sans"
-            style={{
-              fontSize: "11px",
-              color: "var(--t3)",
-              fontWeight: 500,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            Session open for {elapsed}
-          </span>
-        </div>
-
-        {/* Invite strip */}
-        <div className="lobby-section-2" style={{ marginBottom: "16px" }}>
           <InviteStrip code={code} />
         </div>
 
-        {/* Participants section */}
+        {/* Single card — participants + actions */}
         <div
           className="lobby-section-3"
           style={{
@@ -381,10 +363,9 @@ export default function LobbyPage() {
             border: "1px solid var(--border)",
             borderRadius: "var(--r-lg)",
             padding: "24px 20px",
-            marginBottom: "16px",
           }}
         >
-          {/* Header with count */}
+          {/* Participants header */}
           <div
             className="flex items-center justify-between"
             style={{ marginBottom: "12px" }}
@@ -404,28 +385,20 @@ export default function LobbyPage() {
             <div className="flex items-center gap-3">
               <span
                 className="font-sans"
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 500,
-                  color: "var(--teal)",
-                }}
+                style={{ fontSize: "11px", fontWeight: 500, color: "var(--teal)" }}
               >
                 {readyCount}/{participants.length} ready
               </span>
               <span
                 className="font-sans"
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: "var(--t3)",
-                }}
+                style={{ fontSize: "11px", fontWeight: 600, color: "var(--t3)" }}
               >
                 {participants.length}/{MAX_PARTICIPANTS}
               </span>
             </div>
           </div>
 
-          {/* Progress bar with glow */}
+          {/* Progress bar */}
           <div
             style={{
               width: "100%",
@@ -433,8 +406,7 @@ export default function LobbyPage() {
               background: "var(--surface2)",
               borderRadius: "2px",
               overflow: "hidden",
-              marginBottom: "24px",
-              position: "relative",
+              marginBottom: "20px",
             }}
           >
             <div
@@ -446,32 +418,30 @@ export default function LobbyPage() {
                   : "linear-gradient(90deg, var(--teal), var(--gold))",
                 borderRadius: "2px",
                 transition: "width 0.5s ease",
-                boxShadow: `0 0 8px ${allReady ? "var(--teal-glow)" : "var(--gold-glow)"}`,
               }}
             />
           </div>
 
           {/* Participant grid */}
-          <ParticipantList
-            participants={participants}
-            hostId={sessionData.host_id}
-            isHost={isHost}
-            sessionCode={code}
-            accessToken={authSession?.access_token}
-          />
-        </div>
+          <div style={{ marginBottom: "24px" }}>
+            <ParticipantList
+              participants={participants}
+              hostId={sessionData.host_id}
+              isHost={isHost}
+              sessionCode={code}
+              accessToken={authSession?.access_token}
+            />
+          </div>
 
-        {/* Actions */}
-        <div
-          className="lobby-section-4"
-          style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--r-lg)",
-            padding: "24px 20px",
-            marginBottom: "16px",
-          }}
-        >
+          {/* Divider */}
+          <div
+            style={{
+              borderTop: "1px solid var(--border)",
+              marginBottom: "20px",
+            }}
+          />
+
+          {/* Actions */}
           {isInSession ? (
             <LobbyActions
               isHost={isHost}
@@ -481,7 +451,11 @@ export default function LobbyPage() {
               sessionCode={code}
               accessToken={authSession?.access_token}
               participantId={participantId}
-              onSessionStarted={() => router.replace(`/group/${code}/mood`)}
+              onSessionStarted={() => {
+                redirectingRef.current = true;
+                router.replace(`/group/${code}/mood`);
+              }}
+              onReadyToggled={fetchLobby}
               onLeft={() => router.replace("/group")}
               onDisbanded={() => router.replace("/group")}
             />
@@ -512,10 +486,17 @@ export default function LobbyPage() {
           )}
         </div>
 
-        {/* Activity feed */}
-        <div className="lobby-section-5">
-          <ActivityFeed events={events} />
-        </div>
+        {/* Footer meta */}
+        <p
+          className="lobby-section-4 font-sans text-center"
+          style={{
+            fontSize: "11px",
+            color: "var(--t3)",
+            marginTop: "16px",
+          }}
+        >
+          Session {code} &middot; open for {elapsed}
+        </p>
       </div>
     </main>
   );

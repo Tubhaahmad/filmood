@@ -11,6 +11,7 @@ interface LobbyActionsProps {
   accessToken: string | undefined;
   participantId: string | null;
   onSessionStarted: () => void;
+  onReadyToggled: () => void;
   onLeft: () => void;
   onDisbanded: () => void;
 }
@@ -24,12 +25,14 @@ export default function LobbyActions({
   accessToken,
   participantId,
   onSessionStarted,
+  onReadyToggled,
   onLeft,
   onDisbanded,
 }: LobbyActionsProps) {
   const [starting, setStarting] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [togglingReady, setTogglingReady] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canStart = participantCount >= 2 && allReady;
@@ -41,9 +44,7 @@ export default function LobbyActions({
     try {
       const res = await fetch(`/api/group/${sessionCode}/start`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       const data = await res.json();
@@ -81,8 +82,10 @@ export default function LobbyActions({
         headers,
         body: JSON.stringify(body),
       });
+
+      onReadyToggled();
     } catch {
-      // Silently fail — Realtime will correct the state
+      onReadyToggled();
     } finally {
       setTogglingReady(false);
     }
@@ -114,6 +117,7 @@ export default function LobbyActions({
 
       if (!res.ok) {
         setError(data.error || "Failed to leave");
+        setConfirmLeave(false);
         return;
       }
 
@@ -124,18 +128,31 @@ export default function LobbyActions({
       }
     } catch {
       setError("Something went wrong");
+      setConfirmLeave(false);
     } finally {
       setLeaving(false);
     }
   };
 
+  const startLabel = () => {
+    if (starting) return "Starting...";
+    if (canStart) return "Start session";
+    if (participantCount < 2) return "Waiting for players...";
+    return "Waiting for everyone...";
+  };
+
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-3">
       {error && (
-        <p style={{ fontSize: "13px", color: "var(--rose)" }}>{error}</p>
+        <p
+          className="font-sans"
+          style={{ fontSize: "13px", color: "var(--rose)" }}
+        >
+          {error}
+        </p>
       )}
 
-      {/* Ready toggle — for everyone */}
+      {/* Ready toggle */}
       <button
         onClick={handleReady}
         disabled={togglingReady}
@@ -143,97 +160,102 @@ export default function LobbyActions({
         style={{
           padding: "12px 32px",
           borderRadius: "var(--r)",
-          background: selfReady ? "var(--teal-soft)" : "var(--surface2)",
-          color: selfReady ? "var(--teal)" : "var(--t2)",
+          background: selfReady ? "var(--teal)" : "var(--surface2)",
+          color: selfReady ? "#0a0a0c" : "var(--t2)",
           fontSize: "14px",
           fontWeight: 600,
           border: `1px solid ${selfReady ? "var(--teal)" : "var(--border)"}`,
-          transition: "all var(--t-base)",
+          transition: "all 0.25s ease",
           opacity: togglingReady ? 0.7 : 1,
           width: "100%",
           maxWidth: "260px",
         }}
       >
-        {selfReady ? "Ready ✓" : "Mark as ready"}
+        {selfReady ? "Ready \u2713" : "Mark as ready"}
       </button>
 
+      {/* Start — host only */}
       {isHost && (
-        <>
-          {/* Start button */}
+        <button
+          onClick={handleStart}
+          disabled={!canStart || starting}
+          className="cursor-pointer font-sans"
+          style={{
+            padding: "14px 36px",
+            borderRadius: "var(--r)",
+            background: canStart && !starting ? "var(--teal)" : "var(--surface2)",
+            color: canStart && !starting ? "#0a0a0c" : "var(--t3)",
+            fontSize: "14px",
+            fontWeight: 600,
+            border: "none",
+            transition: "all 0.25s ease",
+            opacity: starting ? 0.7 : 1,
+            width: "100%",
+            maxWidth: "260px",
+          }}
+        >
+          {startLabel()}
+        </button>
+      )}
+
+      {/* Leave / Disband — with confirm */}
+      <div style={{ marginTop: "4px" }}>
+        {confirmLeave ? (
+          <div className="flex items-center gap-3">
+            <span
+              className="font-sans"
+              style={{ fontSize: "12px", color: "var(--t2)" }}
+            >
+              {isHost ? "Disband session?" : "Leave session?"}
+            </span>
+            <button
+              onClick={handleLeave}
+              disabled={leaving}
+              className="cursor-pointer font-sans"
+              style={{
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "var(--rose)",
+                background: "none",
+                border: "none",
+                padding: "2px 6px",
+              }}
+            >
+              {leaving ? "..." : "Yes"}
+            </button>
+            <button
+              onClick={() => setConfirmLeave(false)}
+              className="cursor-pointer font-sans"
+              style={{
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+                padding: "2px 6px",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
           <button
-            onClick={handleStart}
-            disabled={!canStart || starting}
+            onClick={() => setConfirmLeave(true)}
             className="cursor-pointer font-sans"
             style={{
-              padding: "14px 36px",
-              borderRadius: "var(--r)",
-              background: canStart && !starting ? "var(--teal)" : "var(--surface2)",
-              color: canStart && !starting ? "#0a0a0c" : "var(--t3)",
-              fontSize: "14px",
-              fontWeight: 600,
-              border: "none",
-              transition: "all var(--t-base)",
-              opacity: starting ? 0.7 : 1,
-              width: "100%",
-              maxWidth: "260px",
-            }}
-          >
-            {starting
-              ? "Starting..."
-              : canStart
-                ? "Start session"
-                : participantCount < 2
-                  ? "Waiting for players..."
-                  : "Waiting for everyone to be ready..."}
-          </button>
-        </>
-      )}
-
-      {!isHost && (
-        <div className="flex items-center gap-2">
-          <span
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: "var(--teal)",
-              animation: "breathe 2s ease-in-out infinite",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "13px",
+              fontSize: "12px",
               fontWeight: 500,
-              color: "var(--t2)",
+              color: "var(--t3)",
+              background: "none",
+              border: "none",
+              padding: "4px 8px",
+              transition: "color var(--t-fast)",
             }}
           >
-            Waiting for host to start...
-          </span>
-        </div>
-      )}
-
-      {/* Leave/disband */}
-      <button
-        onClick={handleLeave}
-        disabled={leaving}
-        className="cursor-pointer font-sans"
-        style={{
-          padding: "8px 18px",
-          borderRadius: "10px",
-          background: "none",
-          color: leaving ? "var(--t3)" : "var(--t2)",
-          fontSize: "12px",
-          fontWeight: 500,
-          border: "1px solid var(--border)",
-          transition: "all var(--t-base)",
-        }}
-      >
-        {leaving
-          ? "Leaving..."
-          : isHost
-            ? "Disband session"
-            : "Leave session"}
-      </button>
+            {isHost ? "Disband session" : "Leave session"}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
