@@ -60,6 +60,14 @@ export interface TrailerData {
   type: string;
 }
 
+// ─── Deck Film (enriched for swipe cards) ────────────
+
+/** A film inside a group session deck — carries genre IDs and the mood(s) it was sourced from */
+export interface DeckFilm extends Film {
+  genre_ids: number[];
+  mood_keys: string[];
+}
+
 // ─── Group Session Types ──────────────────────────────
 
 export type SessionStatus = "lobby" | "mood" | "swiping" | "done";

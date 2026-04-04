@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
 import { isSessionExpired } from "@/lib/group";
-import type { Film, SwipeVote } from "@/lib/types";
+import type { DeckFilm, SwipeVote } from "@/lib/types";
 
 const VALID_VOTES: SwipeVote[] = ["yes", "no", "maybe"];
 
@@ -88,7 +88,7 @@ export async function GET(
       .select("id, nickname, has_swiped")
       .eq("session_id", session.id);
 
-    const deck: Film[] = session.movie_deck ?? [];
+    const deck: DeckFilm[] = session.movie_deck ?? [];
     const votedIds = new Set((swipes ?? []).map((s) => s.movie_id));
 
     return NextResponse.json({
@@ -185,7 +185,7 @@ export async function POST(
     }
 
     // Validate movie exists in the deck
-    const deck: Film[] = session.movie_deck ?? [];
+    const deck: DeckFilm[] = session.movie_deck ?? [];
     const movieExists = deck.some((film) => film.id === movieId);
 
     if (!movieExists) {
