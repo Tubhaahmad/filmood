@@ -60,7 +60,7 @@ export async function POST(
       );
     }
 
-    // Need at least 2 participants, and al
+    // Need at least 2 participants, all must be ready
     const { data: allParticipants } = await supabase
       .from("session_participants")
       .select("id, is_ready")

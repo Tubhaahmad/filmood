@@ -57,7 +57,7 @@ export default function MoodCard({
 
       {/* Tag pill */}
       <span
-        className="relative z-[1] mb-auto inline-flex w-fit"
+        className="relative z-1 mb-auto inline-flex w-fit"
         style={{
           padding: "4px 8px",
           borderRadius: "100px",
@@ -75,7 +75,7 @@ export default function MoodCard({
 
       {/* Title */}
       <div
-        className="relative z-[1]"
+        className="relative z-1"
         style={{
           marginTop: "10px",
           marginBottom: "3px",
@@ -90,7 +90,7 @@ export default function MoodCard({
 
       {/* Subtitle */}
       <div
-        className="relative z-[1]"
+        className="relative z-1"
         style={{
           fontSize: "11px",
           fontWeight: 400,
