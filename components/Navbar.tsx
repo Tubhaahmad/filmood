@@ -13,16 +13,17 @@ function useTheme() {
 
   useEffect(() => {
     const current = document.documentElement.getAttribute("data-theme");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (current === "light") setTheme("light");
     setMounted(true);
   }, []);
 
-  const toggle = () => {
+  function toggle() {
     const next = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
     setTheme(next);
-  };
+  }
 
   return { theme, toggle, mounted };
 }
@@ -44,12 +45,17 @@ export default function Navbar() {
       <Link
         href="/"
         className="font-serif no-underline"
-        style={{ fontSize: "22px", fontWeight: 600, color: "var(--t1)", letterSpacing: "-0.3px" }}
+        style={{
+          fontSize: "22px",
+          fontWeight: 600,
+          color: "var(--t1)",
+          letterSpacing: "-0.3px",
+        }}
       >
         Filmood
       </Link>
 
-      <div className="hidden md:flex items-center gap-[10px]">
+      <div className="hidden md:flex items-center gap-2.5">
         <button
           onClick={toggleTheme}
           className="flex items-center justify-center cursor-pointer"
@@ -69,7 +75,7 @@ export default function Navbar() {
         </button>
 
         {!loading && !user && (
-          <div className="flex gap-[6px]">
+          <div className="flex gap-1.5">
             <Link
               href="/login"
               className="no-underline"
@@ -103,28 +109,50 @@ export default function Navbar() {
         )}
 
         {!loading && user && (
-          <div className="flex items-center gap-[10px]">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={signOut}
               className="cursor-pointer"
-              style={{ fontSize: "12px", fontWeight: 500, color: "var(--t3)", background: "none", border: "none" }}
+              style={{
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+              }}
             >
               Sign out
             </button>
-            <div
-              className="flex items-center justify-center"
+
+            <Link
+              href="/profile"
               style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "var(--gold)",
                 fontSize: "12px",
-                fontWeight: 600,
-                color: "#0a0a0c",
+                fontWeight: 500,
+                color: "var(--t2)",
+                textDecoration: "none",
               }}
             >
-              {user.email?.[0]?.toUpperCase() || "U"}
-            </div>
+              Profile
+            </Link>
+
+            <div> {/* avatar */}</div>
+            <Link href="/profile" style={{ textDecoration: "none" }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "var(--gold)",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#0a0a0c",
+                }}
+              >
+                {user.email?.[0]?.toUpperCase() || "U"}
+              </div>
+            </Link>
           </div>
         )}
       </div>
@@ -134,31 +162,73 @@ export default function Navbar() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle menu"
         aria-expanded={isOpen}
-        style={{ fontSize: "22px", color: "var(--t1)", background: "none", border: "none" }}
+        style={{
+          fontSize: "22px",
+          color: "var(--t1)",
+          background: "none",
+          border: "none",
+        }}
       >
         {isOpen ? "✕" : "☰"}
       </button>
 
       {isOpen && (
         <div
-          className="absolute left-0 right-0 top-full flex flex-col items-end gap-[16px] md:hidden"
-          style={{ padding: "20px 28px", background: "var(--bg)", borderBottom: "1px solid var(--border)" }}
+          className="absolute left-0 right-0 top-full flex flex-col items-end gap-4 md:hidden"
+          style={{
+            padding: "20px 28px",
+            background: "var(--bg)",
+            borderBottom: "1px solid var(--border)",
+          }}
         >
           <button
             onClick={toggleTheme}
             className="cursor-pointer"
-            style={{ fontSize: "14px", color: "var(--t2)", background: "none", border: "none" }}
+            style={{
+              fontSize: "14px",
+              color: "var(--t2)",
+              background: "none",
+              border: "none",
+            }}
           >
             {!mounted || theme === "dark" ? "☾ Dark" : "☀ Light"}
           </button>
           {!loading && !user && (
             <>
-              <Link href="/login" onClick={() => setIsOpen(false)} className="no-underline" style={{ fontSize: "14px", color: "var(--t2)" }}>Log in</Link>
-              <Link href="/signup" onClick={() => setIsOpen(false)} className="no-underline" style={{ fontSize: "14px", color: "var(--gold)" }}>Sign up</Link>
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--t2)" }}
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--gold)" }}
+              >
+                Sign up
+              </Link>
             </>
           )}
           {!loading && user && (
-            <button onClick={() => { signOut(); setIsOpen(false); }} className="cursor-pointer" style={{ fontSize: "14px", color: "var(--t3)", background: "none", border: "none" }}>Sign out</button>
+            <button
+              onClick={() => {
+                signOut();
+                setIsOpen(false);
+              }}
+              className="cursor-pointer"
+              style={{
+                fontSize: "14px",
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+              }}
+            >
+              Sign out
+            </button>
           )}
         </div>
       )}
