@@ -56,13 +56,15 @@ interface TrendingItem {
 }
 
 interface SearchBoxProps {
-  onResults?: (films: Film[]) => void;
+  onResults?: (films: Film[], keepOpen?: boolean) => void;
+  onLabel?: (label: string) => void;
   onExpand?: () => void;
   isExpanded?: boolean;
 }
 
 export default function SearchBox({
   onResults,
+  onLabel,
   onExpand,
   isExpanded,
 }: SearchBoxProps) {
@@ -73,6 +75,7 @@ export default function SearchBox({
   );
   const [activeGenre, setActiveGenre] = useState<number | null>(null);
   const [trending, setTrending] = useState<TrendingItem[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fetch trending movies on mount
@@ -96,7 +99,9 @@ export default function SearchBox({
           `/api/movies/search?query=${encodeURIComponent(q.trim())}&type=all`,
         );
         const data = await res.json();
-        onResults?.(data.films ?? []);
+        const films = data.films ?? [];
+        onResults?.(films);
+        onLabel?.(`Search results — ${films.length} film${films.length !== 1 ? "s" : ""}`);
         onExpand?.();
       } catch {
         onResults?.([]);
@@ -104,7 +109,7 @@ export default function SearchBox({
         setIsLoading(false);
       }
     },
-    [onResults, onExpand],
+    [onResults, onLabel, onExpand],
   );
 
   const doBrowse = useCallback(
@@ -115,15 +120,25 @@ export default function SearchBox({
         if (genreId) params.set("genre", String(genreId));
         const res = await fetch(`/api/movies/browse?${params.toString()}`);
         const data = await res.json();
-        onResults?.(data.films ?? []);
-        onExpand?.();
+        const films = data.films ?? [];
+        onResults?.(films, true);
+        const catLabel =
+          BROWSE_CATEGORIES.find((c) => c.id === category)?.label ?? category;
+        const genreLabel = genreId
+          ? GENRES.find((g) => g.id === genreId)?.label
+          : undefined;
+        onLabel?.(
+          genreLabel
+            ? `${catLabel} — ${genreLabel} — ${films.length} film${films.length !== 1 ? "s" : ""}`
+            : `${catLabel} — ${films.length} film${films.length !== 1 ? "s" : ""}`,
+        );
       } catch {
         onResults?.([]);
       } finally {
         setIsLoading(false);
       }
     },
-    [onResults, onExpand],
+    [onResults, onLabel],
   );
 
   // Debounced search on typing
@@ -148,6 +163,7 @@ export default function SearchBox({
       } else {
         setActiveCategory("by-genre");
         setQuery("");
+        onExpand?.();
       }
       return;
     }
@@ -158,17 +174,27 @@ export default function SearchBox({
     }
     setActiveCategory(categoryId);
     setQuery("");
+    onExpand?.();
     doBrowse(categoryId);
   };
 
   const handleGenreClick = (genreId: number) => {
     setActiveGenre(genreId);
+    onExpand?.();
     doBrowse("by-genre", genreId);
+  };
+
+  // When panel opens and nothing is active, load trending into the panel
+  const handleSectionClick = () => {
+    onExpand?.();
+    if (!query && !activeCategory) {
+      doBrowse("trending");
+    }
   };
 
   return (
     <section
-      onClick={onExpand}
+      onClick={handleSectionClick}
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
@@ -236,17 +262,25 @@ export default function SearchBox({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => {
+            setInputFocused(true);
+            if (!query && !activeCategory) doBrowse("trending");
+            onExpand?.();
+          }}
+          onBlur={() => setInputFocused(false)}
           placeholder="Film, actor, director..."
           aria-label="Search films, actors, or directors"
           style={{
             width: "100%",
             borderRadius: "12px",
             background: "var(--surface2)",
-            border: "1px solid var(--border)",
+            border: `1px solid ${inputFocused ? "var(--blue)" : "var(--border)"}`,
+            boxShadow: inputFocused ? "0 0 0 3px var(--blue-soft)" : "none",
             color: "var(--t1)",
             padding: "11px 14px 11px 40px",
             fontSize: "14px",
             outline: "none",
+            transition: "border-color 0.2s, box-shadow 0.2s",
           }}
         />
         {isLoading && (
