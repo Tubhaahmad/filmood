@@ -311,3 +311,13 @@
     flex-direction: column;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Swipe — Responsive overrides
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hide keyboard hints and group dots on mobile */
+@media (max-width: 600px) {
+  .swipe-group-dots { display: none !important; }
+  .swipe-key-hints { display: none !important; }
+}
