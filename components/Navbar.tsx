@@ -1,34 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useAuth } from "./AuthProvider";
 
+function getThemeSnapshot(): "dark" | "light" {
+  return document.documentElement.getAttribute("data-theme") === "light"
+    ? "light"
+    : "dark";
+}
+
+function getServerSnapshot(): "dark" | "light" {
+  return "dark";
+}
+
+function subscribeToTheme(callback: () => void) {
+  const observer = new MutationObserver(callback);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
+
 function useTheme() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const current = document.documentElement.getAttribute("data-theme");
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (current === "light") setTheme("light");
-    setMounted(true);
-  }, []);
-
-  function toggle() {
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerSnapshot,
+  );
+  const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
-    setTheme(next);
-  }
+  };
 
-  return { theme, toggle, mounted };
+  return { theme, toggle };
 }
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
-  const { theme, toggle: toggleTheme, mounted } = useTheme();
+  const { theme, toggle: toggleTheme } = useTheme();
 
   return (
     <nav
@@ -69,7 +82,7 @@ export default function Navbar() {
           }}
           title="Toggle theme"
         >
-          {!mounted || theme === "dark" ? "☾" : "☀"}
+          {theme === "dark" ? "☾" : "☀"}
         </button>
 
         {/* Guest */}
@@ -186,7 +199,7 @@ export default function Navbar() {
               border: "none",
             }}
           >
-            {!mounted || theme === "dark" ? "☾ Dark" : "☀ Light"}
+            {theme === "dark" ? "☾ Dark" : "☀ Light"}
           </button>
 
           {!loading && !user && (
