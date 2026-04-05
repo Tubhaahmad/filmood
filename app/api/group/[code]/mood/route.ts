@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
 import { isSessionExpired } from "@/lib/group";
 import { moodMap, buildTMDBParams } from "@/lib/moodMap";
-import type { Film } from "@/lib/types";
+import type { DeckFilm } from "@/lib/types";
 
 const DECK_SIZE = 15;
 
@@ -168,11 +168,23 @@ export async function POST(
   }
 }
 
+// TMDB discover result shape — includes genre_ids which we now capture
+interface TMDBDiscoverResult {
+  id: number;
+  title: string;
+  poster_path: string | null;
+  release_date: string;
+  vote_average: number;
+  overview: string;
+  genre_ids: number[];
+}
+
 // Aggregate all participants' moods with weighted frequency,
 // fetch films from TMDB, and build a balanced deck.
+// Each film is tagged with genre_ids and the mood(s) it was sourced from.
 async function buildSharedDeck(
   participants: { mood_selections: string[] | null }[],
-): Promise<Film[]> {
+): Promise<DeckFilm[]> {
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) throw new Error("TMDB API key not configured");
 
@@ -229,45 +241,75 @@ async function buildSharedDeck(
 
     const res = await fetch(url.toString());
     const data = await res.json();
-    const results: Film[] = (data.results ?? []).map(
-      (r: { id: number; title: string; poster_path: string | null; release_date: string; vote_average: number; overview: string }) => ({
+    const results: (DeckFilm & { _raw_genre_ids: number[] })[] =
+      (data.results ?? []).map((r: TMDBDiscoverResult) => ({
         id: r.id,
         title: r.title,
         poster_path: r.poster_path,
         release_date: r.release_date,
         vote_average: r.vote_average,
         overview: r.overview,
-      }),
-    );
+        genre_ids: r.genre_ids ?? [],
+        mood_keys: [mood],
+        _raw_genre_ids: r.genre_ids ?? [],
+      }));
 
     return { mood, count, results };
   });
 
   const moodResults = await Promise.all(fetchResults);
 
-  // Build deck: pick films per mood allocation, dedup across moods
-  const seen = new Set<number>();
-  const deck: Film[] = [];
+  // Build deck: pick films per mood allocation, dedup across moods.
+  // If a film appears under multiple moods, merge the mood_keys.
+  const seen = new Map<number, DeckFilm>();
+  const deck: DeckFilm[] = [];
 
-  for (const { count, results } of moodResults) {
+  for (const { mood, count, results } of moodResults) {
     let picked = 0;
     for (const film of results) {
       if (picked >= count) break;
-      if (seen.has(film.id)) continue;
-      seen.add(film.id);
-      deck.push(film);
+      const existing = seen.get(film.id);
+      if (existing) {
+        // Film already in deck from another mood — add this mood tag
+        if (!existing.mood_keys.includes(mood)) {
+          existing.mood_keys.push(mood);
+        }
+        continue;
+      }
+      const deckFilm: DeckFilm = {
+        id: film.id,
+        title: film.title,
+        poster_path: film.poster_path,
+        release_date: film.release_date,
+        vote_average: film.vote_average,
+        overview: film.overview,
+        genre_ids: film.genre_ids,
+        mood_keys: [mood],
+      };
+      seen.set(film.id, deckFilm);
+      deck.push(deckFilm);
       picked++;
     }
   }
 
   // If any mood couldn't fill its allocation, backfill from others
   if (deck.length < DECK_SIZE) {
-    for (const { results } of moodResults) {
+    for (const { mood, results } of moodResults) {
       for (const film of results) {
         if (deck.length >= DECK_SIZE) break;
         if (seen.has(film.id)) continue;
-        seen.add(film.id);
-        deck.push(film);
+        const deckFilm: DeckFilm = {
+          id: film.id,
+          title: film.title,
+          poster_path: film.poster_path,
+          release_date: film.release_date,
+          vote_average: film.vote_average,
+          overview: film.overview,
+          genre_ids: film.genre_ids,
+          mood_keys: [mood],
+        };
+        seen.set(film.id, deckFilm);
+        deck.push(deckFilm);
       }
     }
   }

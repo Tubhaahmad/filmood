@@ -27,15 +27,6 @@ const AVATAR_COLORS = [
   "var(--ember)",
 ];
 
-const AVATAR_GLOWS = [
-  "var(--teal-glow)",
-  "var(--gold-glow)",
-  "var(--blue-glow)",
-  "var(--violet-glow)",
-  "var(--rose-glow)",
-  "var(--ember-glow)",
-];
-
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
@@ -52,13 +43,16 @@ export default function ParticipantList({
   accessToken,
 }: ParticipantListProps) {
   const [kickingId, setKickingId] = useState<string | null>(null);
+  const [confirmKickId, setConfirmKickId] = useState<string | null>(null);
+  const [kickError, setKickError] = useState<string | null>(null);
 
   const handleKick = async (participantId: string) => {
-    if (!confirm("Remove this person from the session?")) return;
-
     setKickingId(participantId);
+    setConfirmKickId(null);
+    setKickError(null);
+
     try {
-      await fetch(`/api/group/${sessionCode}/kick`, {
+      const res = await fetch(`/api/group/${sessionCode}/kick`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,130 +60,129 @@ export default function ParticipantList({
         },
         body: JSON.stringify({ participantId }),
       });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setKickError(data.error || "Failed to remove");
+      }
+    } catch {
+      setKickError("Failed to remove");
     } finally {
       setKickingId(null);
     }
   };
 
   return (
+    <div>
+      {kickError && (
+        <p
+          className="font-sans text-center"
+          style={{ fontSize: "12px", color: "var(--rose)", marginBottom: "12px" }}
+        >
+          {kickError}
+        </p>
+      )}
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
-        gap: "20px",
-        justifyItems: "center",
+        gridTemplateColumns: participants.length <= 4
+          ? `repeat(${Math.min(participants.length, 3)}, 1fr)`
+          : "repeat(auto-fill, minmax(100px, 1fr))",
+        gap: "12px",
       }}
     >
       {participants.map((p, i) => {
         const isThisHost = p.user_id === hostId;
         const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
-        const glow = AVATAR_GLOWS[i % AVATAR_GLOWS.length];
 
         return (
           <div
             key={p.id}
-            className="flex flex-col items-center gap-2"
             style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "8px",
+              padding: "16px 8px 12px",
+              borderRadius: "12px",
+              background: p.is_ready ? "var(--surface2)" : "transparent",
+              border: `1px solid ${p.is_ready ? "var(--border-h)" : "var(--border)"}`,
+              transition: "all 0.3s ease",
               animation: "popIn 0.4s ease both",
-              animationDelay: `${i * 80}ms`,
+              animationDelay: `${i * 60}ms`,
               position: "relative",
             }}
           >
-            {/* Avatar with aura */}
-            <div style={{ position: "relative" }}>
-              {/* Aura ring — visible when ready */}
-              {p.is_ready && (
-                <div
+            {/* Avatar */}
+            <div
+              style={{
+                width: "46px",
+                height: "46px",
+                borderRadius: "50%",
+                background: `color-mix(in srgb, ${color} 12%, var(--surface2))`,
+                border: `2px solid ${p.is_ready ? color : "var(--border)"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "15px",
+                fontWeight: 700,
+                color: color,
+                letterSpacing: "0.5px",
+                transition: "border-color 0.3s ease",
+                position: "relative",
+              }}
+            >
+              {getInitials(p.nickname)}
+
+              {/* Host star */}
+              {isThisHost && (
+                <span
                   style={{
                     position: "absolute",
-                    inset: "-8px",
-                    borderRadius: "50%",
-                    background: `radial-gradient(circle, ${glow} 30%, transparent 70%)`,
-                    opacity: 0.8,
-                    animation: "breathe 3s ease-in-out infinite",
-                    animationDelay: `${i * 200}ms`,
-                    pointerEvents: "none",
+                    top: "-6px",
+                    right: "-4px",
+                    fontSize: "13px",
+                    lineHeight: 1,
+                    color: "var(--gold)",
+                    filter: "drop-shadow(0 0 3px var(--gold-glow))",
                   }}
-                />
+                >
+                  &#9733;
+                </span>
               )}
 
-              {/* Avatar circle */}
-              <div
-                style={{
-                  position: "relative",
-                  width: "54px",
-                  height: "54px",
-                  borderRadius: "50%",
-                  background: `color-mix(in srgb, ${color} 12%, var(--surface2))`,
-                  border: `2px solid ${p.is_ready ? color : "var(--border)"}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "16px",
-                  fontWeight: 700,
-                  color: color,
-                  letterSpacing: "0.5px",
-                  transition: "border-color 0.4s ease, box-shadow 0.4s ease",
-                  boxShadow: p.is_ready
-                    ? `0 0 16px ${glow}`
-                    : "none",
-                  zIndex: 1,
-                }}
-              >
-                {getInitials(p.nickname)}
-
-                {/* Host star */}
-                {isThisHost && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: "-7px",
-                      right: "-5px",
-                      fontSize: "14px",
-                      lineHeight: 1,
-                      filter: "drop-shadow(0 0 4px var(--gold-glow))",
-                    }}
-                    title="Host"
-                  >
-                    &#9733;
-                  </span>
-                )}
-
-                {/* Ready checkmark */}
-                {p.is_ready && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: "-3px",
-                      right: "-3px",
-                      width: "18px",
-                      height: "18px",
-                      borderRadius: "50%",
-                      background: "var(--teal)",
-                      color: "#0a0a0c",
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      animation: "popIn 0.3s ease both",
-                      boxShadow: "0 0 8px var(--teal-glow)",
-                      zIndex: 2,
-                    }}
-                  >
-                    &#10003;
-                  </span>
-                )}
-              </div>
+              {/* Ready checkmark */}
+              {p.is_ready && (
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: "-2px",
+                    right: "-2px",
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "50%",
+                    background: "var(--teal)",
+                    color: "#0a0a0c",
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    animation: "popIn 0.3s ease both",
+                  }}
+                >
+                  &#10003;
+                </span>
+              )}
             </div>
 
             {/* Name */}
             <span
               className="font-sans"
               style={{
-                fontSize: "11px",
+                fontSize: "12px",
                 fontWeight: 600,
-                color: isThisHost ? "var(--t1)" : "var(--t2)",
+                color: "var(--t1)",
                 textAlign: "center",
                 maxWidth: "90px",
                 overflow: "hidden",
@@ -208,41 +201,70 @@ export default function ParticipantList({
                 fontWeight: 600,
                 textTransform: "uppercase",
                 letterSpacing: "1.2px",
-                color: isThisHost
-                  ? "var(--teal)"
-                  : p.is_ready
-                    ? "var(--gold)"
-                    : "var(--t3)",
+                color: isThisHost ? "var(--gold)" : p.is_ready ? "var(--teal)" : "var(--t3)",
               }}
             >
-              {isThisHost ? "Host" : p.is_ready ? "Ready" : p.user_id ? "Member" : "Guest"}
+              {isThisHost ? "Host" : p.is_ready ? "Ready" : "Joined"}
             </span>
 
-            {/* Kick button */}
+            {/* Kick — two-step confirm */}
             {isHost && !isThisHost && (
-              <button
-                onClick={() => handleKick(p.id)}
-                disabled={kickingId === p.id}
-                className="cursor-pointer font-sans"
-                style={{
-                  fontSize: "9px",
-                  fontWeight: 500,
-                  color: "var(--t3)",
-                  background: "none",
-                  border: "none",
-                  padding: "2px 6px",
-                  transition: "color var(--t-fast)",
-                  opacity: kickingId === p.id ? 0.5 : 1,
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--rose)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
-              >
-                {kickingId === p.id ? "..." : "Remove"}
-              </button>
+              <div style={{ minHeight: "18px" }}>
+                {confirmKickId === p.id ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleKick(p.id)}
+                      disabled={kickingId === p.id}
+                      className="cursor-pointer font-sans"
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 600,
+                        color: "var(--rose)",
+                        background: "none",
+                        border: "none",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      {kickingId === p.id ? "..." : "Yes"}
+                    </button>
+                    <button
+                      onClick={() => setConfirmKickId(null)}
+                      className="cursor-pointer font-sans"
+                      style={{
+                        fontSize: "9px",
+                        fontWeight: 500,
+                        color: "var(--t3)",
+                        background: "none",
+                        border: "none",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      No
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmKickId(p.id)}
+                    className="cursor-pointer font-sans"
+                    style={{
+                      fontSize: "9px",
+                      fontWeight: 500,
+                      color: "var(--t3)",
+                      background: "none",
+                      border: "none",
+                      padding: "2px 4px",
+                      transition: "color var(--t-fast)",
+                    }}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
             )}
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
