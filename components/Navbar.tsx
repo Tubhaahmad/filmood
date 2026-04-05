@@ -65,7 +65,6 @@ export default function Navbar() {
         Filmood
       </Link>
 
-      {/* Desktop nav */}
       <div className="hidden md:flex items-center gap-2.5">
         <button
           onClick={toggleTheme}
@@ -85,7 +84,6 @@ export default function Navbar() {
           {theme === "dark" ? "☾" : "☀"}
         </button>
 
-        {/* Guest */}
         {!loading && !user && (
           <div className="flex gap-1.5">
             <Link
@@ -120,16 +118,8 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* Logged in */}
         {!loading && user && (
           <div className="flex items-center gap-2.5">
-            <Link
-              href="/profile"
-              className="no-underline"
-              style={{ fontSize: "12px", fontWeight: 500, color: "var(--t1)" }}
-            >
-              Profile
-            </Link>
             <button
               onClick={signOut}
               className="cursor-pointer"
@@ -143,27 +133,24 @@ export default function Navbar() {
             >
               Sign out
             </button>
-            <Link href="/profile" style={{ textDecoration: "none" }}>
-              <div
-                className="flex items-center justify-center"
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  background: "var(--gold)",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "#0a0a0c",
-                }}
-              >
-                {user.email?.[0]?.toUpperCase() || "U"}
-              </div>
-            </Link>
+            <div
+              className="flex items-center justify-center"
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "var(--gold)",
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#0a0a0c",
+              }}
+            >
+              {user.email?.[0]?.toUpperCase() || "U"}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Mobile hamburger */}
       <button
         className="md:hidden cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
@@ -179,7 +166,6 @@ export default function Navbar() {
         {isOpen ? "✕" : "☰"}
       </button>
 
-      {/* Mobile menu */}
       {isOpen && (
         <div
           className="absolute left-0 right-0 top-full flex flex-col items-end gap-4 md:hidden"
@@ -201,7 +187,6 @@ export default function Navbar() {
           >
             {theme === "dark" ? "☾ Dark" : "☀ Light"}
           </button>
-
           {!loading && !user && (
             <>
               <Link
@@ -222,33 +207,22 @@ export default function Navbar() {
               </Link>
             </>
           )}
-
           {!loading && user && (
-            <>
-              <Link
-                href="/profile"
-                onClick={() => setIsOpen(false)}
-                className="no-underline"
-                style={{ fontSize: "14px", color: "var(--t1)" }}
-              >
-                Profile
-              </Link>
-              <button
-                onClick={() => {
-                  signOut();
-                  setIsOpen(false);
-                }}
-                className="cursor-pointer"
-                style={{
-                  fontSize: "14px",
-                  color: "var(--t3)",
-                  background: "none",
-                  border: "none",
-                }}
-              >
-                Sign out
-              </button>
-            </>
+            <button
+              onClick={() => {
+                signOut();
+                setIsOpen(false);
+              }}
+              className="cursor-pointer"
+              style={{
+                fontSize: "14px",
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+              }}
+            >
+              Sign out
+            </button>
           )}
         </div>
       )}
