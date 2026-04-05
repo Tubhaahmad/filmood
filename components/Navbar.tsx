@@ -51,7 +51,12 @@ export default function Navbar() {
       <Link
         href="/"
         className="font-serif no-underline"
-        style={{ fontSize: "22px", fontWeight: 600, color: "var(--t1)", letterSpacing: "-0.3px" }}
+        style={{
+          fontSize: "22px",
+          fontWeight: 600,
+          color: "var(--t1)",
+          letterSpacing: "-0.3px",
+        }}
       >
         Filmood
       </Link>
@@ -114,7 +119,13 @@ export default function Navbar() {
             <button
               onClick={signOut}
               className="cursor-pointer"
-              style={{ fontSize: "12px", fontWeight: 500, color: "var(--t3)", background: "none", border: "none" }}
+              style={{
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+              }}
             >
               Sign out
             </button>
@@ -141,7 +152,12 @@ export default function Navbar() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle menu"
         aria-expanded={isOpen}
-        style={{ fontSize: "22px", color: "var(--t1)", background: "none", border: "none" }}
+        style={{
+          fontSize: "22px",
+          color: "var(--t1)",
+          background: "none",
+          border: "none",
+        }}
       >
         {isOpen ? "✕" : "☰"}
       </button>
@@ -154,18 +170,51 @@ export default function Navbar() {
           <button
             onClick={toggleTheme}
             className="cursor-pointer"
-            style={{ fontSize: "14px", color: "var(--t2)", background: "none", border: "none" }}
+            style={{
+              fontSize: "14px",
+              color: "var(--t2)",
+              background: "none",
+              border: "none",
+            }}
           >
             {theme === "dark" ? "☾ Dark" : "☀ Light"}
           </button>
           {!loading && !user && (
             <>
-              <Link href="/login" onClick={() => setIsOpen(false)} className="no-underline" style={{ fontSize: "14px", color: "var(--t2)" }}>Log in</Link>
-              <Link href="/signup" onClick={() => setIsOpen(false)} className="no-underline" style={{ fontSize: "14px", color: "var(--gold)" }}>Sign up</Link>
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--t2)" }}
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--gold)" }}
+              >
+                Sign up
+              </Link>
             </>
           )}
           {!loading && user && (
-            <button onClick={() => { signOut(); setIsOpen(false); }} className="cursor-pointer" style={{ fontSize: "14px", color: "var(--t3)", background: "none", border: "none" }}>Sign out</button>
+            <button
+              onClick={() => {
+                signOut();
+                setIsOpen(false);
+              }}
+              className="cursor-pointer"
+              style={{
+                fontSize: "14px",
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+              }}
+            >
+              Sign out
+            </button>
           )}
         </div>
       )}
