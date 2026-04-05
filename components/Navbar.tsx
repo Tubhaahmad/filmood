@@ -137,20 +137,22 @@ export default function Navbar() {
             </Link>
 
             <div> {/* avatar */}</div>
-            <div
-              className="flex items-center justify-center"
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "var(--gold)",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#0a0a0c",
-              }}
-            >
-              {user.email?.[0]?.toUpperCase() || "U"}
-            </div>
+            <Link href="/profile" style={{ textDecoration: "none" }}>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "var(--gold)",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#0a0a0c",
+                }}
+              >
+                {user.email?.[0]?.toUpperCase() || "U"}
+              </div>
+            </Link>
           </div>
         )}
       </div>
