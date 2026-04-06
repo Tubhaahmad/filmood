@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
+import { useParticipantId } from "@/lib/useParticipantId";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 import TopPickCard from "@/components/group/TopPickCard";
 import TierSection from "@/components/group/TierSection";
 import type { GroupResultsPayload, Provider } from "@/lib/types";
@@ -12,47 +14,29 @@ export default function GroupResultsPage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
   const router = useRouter();
-  const { session: authSession, loading: authLoading } = useAuth();
+  const { loading: authLoading } = useAuth();
 
   const [data, setData] = useState<GroupResultsPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [participantId, setParticipantId] = useState<string | null>(null);
-  // Tracks whether we've finished reading participantId from localStorage.
-  // Without this flag, a guest's first fetch fires before the localStorage
-  // read completes and the API rejects it with 401.
-  const [participantIdReady, setParticipantIdReady] = useState(false);
+  const { participantId, ready: participantIdReady } = useParticipantId();
 
   const [providers, setProviders] = useState<Provider[] | null>(null);
   const [providersLoading, setProvidersLoading] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("participantId");
-    if (stored) setParticipantId(stored);
-    setParticipantIdReady(true);
-  }, []);
-
-  const getHeaders = useCallback(() => {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (authSession?.access_token) {
-      headers.Authorization = `Bearer ${authSession.access_token}`;
-    }
-    return headers;
-  }, [authSession]);
-
   // Load the results payload
   const fetchResults = useCallback(async () => {
-    // Clear any previous error — if a retry succeeds, stale error state
-    // would otherwise keep the error screen visible forever
     setError(null);
     try {
+      const headers = await getAuthHeaders();
+      const isGuest = !headers.Authorization;
       const pidParam =
-        !authSession?.access_token && participantId
+        isGuest && participantId
           ? `?participantId=${participantId}`
           : "";
 
       const res = await fetch(`/api/group/${code}/results${pidParam}`, {
-        headers: getHeaders(),
+        headers,
       });
 
       if (!res.ok) {
@@ -78,7 +62,7 @@ export default function GroupResultsPage() {
     } finally {
       setLoading(false);
     }
-  }, [code, router, authSession, participantId, getHeaders]);
+  }, [code, router, participantId]);
 
   useEffect(() => {
     // Wait until both auth has resolved AND we've tried to read participantId

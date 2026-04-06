@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { useParticipantId } from "@/lib/useParticipantId";
+import { useGroupRealtime } from "@/lib/useGroupRealtime";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 import { allMoods } from "@/lib/moodMap";
 import MoodCard from "@/components/dashboard/MoodCard";
 
@@ -24,7 +26,7 @@ export default function GroupMoodPage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
   const router = useRouter();
-  const { user, session: authSession, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [phase, setPhase] = useState<Phase>("selecting");
   const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
@@ -34,14 +36,8 @@ export default function GroupMoodPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [participantId, setParticipantId] = useState<string | null>(null);
-  const fetchRef = useRef<() => Promise<void>>(undefined);
+  const { participantId } = useParticipantId();
   const redirectingRef = useRef(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("participantId");
-    if (stored) setParticipantId(stored);
-  }, []);
 
   const fetchState = useCallback(async () => {
     if (redirectingRef.current) return;
@@ -105,8 +101,6 @@ export default function GroupMoodPage() {
     }
   }, [code, router, user, participantId]);
 
-  fetchRef.current = fetchState;
-
   // Initial fetch
   useEffect(() => {
     if (!authLoading) {
@@ -121,56 +115,13 @@ export default function GroupMoodPage() {
     }
   }, [sessionInfo, sessionId]);
 
-  // Polling fallback every 2s
-  useEffect(() => {
-    if (loading || phase === "building") return;
-    const interval = setInterval(() => {
-      fetchRef.current?.();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [loading, phase]);
-
-  // Realtime subscriptions
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const participantsChannel = supabase
-      .channel(`mood-participants-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "session_participants",
-          filter: `session_id=eq.${sessionId}`,
-        },
-        () => {
-          fetchRef.current?.();
-        },
-      )
-      .subscribe();
-
-    const sessionChannel = supabase
-      .channel(`mood-session-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "sessions",
-          filter: `id=eq.${sessionId}`,
-        },
-        () => {
-          fetchRef.current?.();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(participantsChannel);
-      supabase.removeChannel(sessionChannel);
-    };
-  }, [sessionId]);
+  // Realtime + polling
+  useGroupRealtime({
+    sessionId,
+    channelPrefix: "mood",
+    onUpdate: fetchState,
+    paused: loading || phase === "building",
+  });
 
   const toggleMood = (key: string) => {
     if (phase !== "selecting") return;
@@ -191,17 +142,13 @@ export default function GroupMoodPage() {
     setError(null);
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (authSession?.access_token) {
-        headers.Authorization = `Bearer ${authSession.access_token}`;
-      }
+      const headers = await getAuthHeaders();
+      const isGuest = !headers.Authorization;
 
       const body: { moods: string[]; participantId?: string } = {
         moods: Array.from(selectedMoods),
       };
-      if (!authSession?.access_token && participantId) {
+      if (isGuest && participantId) {
         body.participantId = participantId;
       }
 

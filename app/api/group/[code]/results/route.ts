@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
-import { isSessionExpired } from "@/lib/group";
+import { classifyTier } from "@/lib/group";
+import { resolveSession } from "@/lib/group-api";
 import type {
   DeckFilm,
   SwipeVote,
   MatchResult,
-  ResultTier,
   GroupResultsPayload,
 } from "@/lib/types";
 
@@ -26,14 +26,6 @@ export async function GET(
 ) {
   const { code } = await params;
 
-  if (!code || code.length !== 6) {
-    return NextResponse.json(
-      { error: "Invalid session code" },
-      { status: 400 },
-    );
-  }
-
-  const upperCode = code.toUpperCase();
   const user = await getAuthUser(request);
   const participantIdParam = request.nextUrl.searchParams.get("participantId");
 
@@ -44,25 +36,11 @@ export async function GET(
   try {
     const supabase = getSupabaseAdmin();
 
-    // Fetch session + deck
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, code, status, movie_deck, created_at")
-      .eq("code", upperCode)
-      .single();
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; code: string; status: string; movie_deck: DeckFilm[] | null; created_at: string;
+    }>(supabase, code, "id, code, status, movie_deck, created_at");
+    if (sessionErr) return sessionErr;
 
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
-
-    if (isSessionExpired(session.created_at)) {
-      return NextResponse.json({ error: "Session expired" }, { status: 410 });
-    }
-
-    // Results are only available after everyone has finished swiping
     if (session.status !== "done") {
       return NextResponse.json(
         { error: "Results are not ready yet" },
@@ -198,19 +176,3 @@ export async function GET(
   }
 }
 
-// Tier rules:
-// - perfect: every participant said yes
-// - strong:  nobody said no AND at least half said yes (maybes OK)
-// - miss:    everything else (any no vote, or too few yes votes)
-function classifyTier(
-  yesCount: number,
-  noCount: number,
-  participantCount: number,
-): ResultTier {
-  if (participantCount === 0) return "miss";
-  if (yesCount === participantCount) return "perfect";
-  if (noCount === 0 && yesCount >= Math.ceil(participantCount / 2)) {
-    return "strong";
-  }
-  return "miss";
-}
