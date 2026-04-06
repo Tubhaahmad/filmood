@@ -15,6 +15,14 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
+
+  if (!code || code.length !== 6) {
+    return NextResponse.json(
+      { error: "Invalid session code" },
+      { status: 400 },
+    );
+  }
+
   const upperCode = code.toUpperCase();
 
   const user = await getAuthUser(request);

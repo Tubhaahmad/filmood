@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
+import { isSessionExpired } from "@/lib/group";
 
 // DELETE /api/group/[code]/leave
 // Removes a participant from the session.
@@ -33,10 +34,17 @@ export async function DELETE(
     const supabase = getSupabaseAdmin();
     const upperCode = code.toUpperCase();
 
+    if (!code || code.length !== 6) {
+      return NextResponse.json(
+        { error: "Invalid session code" },
+        { status: 400 },
+      );
+    }
+
     // Fetch the session
     const { data: session, error: sessionError } = await supabase
       .from("sessions")
-      .select("id, host_id, status")
+      .select("id, host_id, status, created_at")
       .eq("code", upperCode)
       .single();
 
@@ -44,6 +52,13 @@ export async function DELETE(
       return NextResponse.json(
         { error: "Session not found" },
         { status: 404 },
+      );
+    }
+
+    if (isSessionExpired(session.created_at)) {
+      return NextResponse.json(
+        { error: "Session expired" },
+        { status: 410 },
       );
     }
 

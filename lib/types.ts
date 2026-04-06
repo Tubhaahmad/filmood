@@ -105,10 +105,28 @@ export interface Swipe {
   created_at: string;
 }
 
-/** Movie with its match score for the results page */
+/** Tier a film falls into after vote aggregation on the results page */
+export type ResultTier = "perfect" | "strong" | "miss";
+
+/** A film from the deck with its aggregated vote breakdown and tier */
 export interface MatchResult {
-  movie: Film;
+  movie: DeckFilm;
+  tier: ResultTier;
+  /** Normalized 0–1: sum of points / (participantCount * 2) */
   score: number;
-  votes: { participant_id: string; vote: SwipeVote }[];
-  tier: "perfect" | "strong" | "miss";
+  yesCount: number;
+  maybeCount: number;
+  noCount: number;
+  /** Individual votes keyed by participant — useful for "who voted what" UI */
+  votes: { participant_id: string; nickname: string; vote: SwipeVote | null }[];
+}
+
+/** Response shape for GET /api/group/[code]/results */
+export interface GroupResultsPayload {
+  code: string;
+  participantCount: number;
+  topPick: MatchResult | null;
+  perfect: MatchResult[];
+  strong: MatchResult[];
+  miss: MatchResult[];
 }
