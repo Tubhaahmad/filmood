@@ -21,6 +21,14 @@ export async function POST(
 
   try {
     const supabase = getSupabaseAdmin();
+
+    if (!code || code.length !== 6) {
+      return NextResponse.json(
+        { error: "Invalid session code" },
+        { status: 400 },
+      );
+    }
+
     const upperCode = code.toUpperCase();
 
     // Fetch the session

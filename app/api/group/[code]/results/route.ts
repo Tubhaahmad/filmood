@@ -9,7 +9,7 @@ import type {
   GroupResultsPayload,
 } from "@/lib/types";
 
-// Point values for each vote type — drives the score
+// Point values for each vote type
 const VOTE_POINTS: Record<SwipeVote, number> = {
   yes: 2,
   maybe: 1,
@@ -113,7 +113,7 @@ export async function GET(
     const participantCount = participants.length;
 
     // Build a lookup: movieId → (participantId → vote)
-    // Lets us produce per-participant vote breakdown per film without N² scans
+    // Lets us produce per-participant vote breakdown per film without N+1 queries
     const votesByMovie = new Map<number, Map<string, SwipeVote>>();
     for (const s of swipes ?? []) {
       if (!votesByMovie.has(s.movie_id)) {
@@ -148,7 +148,7 @@ export async function GET(
         return { participant_id: p.id, nickname: p.nickname, vote };
       });
 
-      // Normalized 0–1 — max possible = participantCount × 2 (everyone says yes)
+      // Normalized 0–1 - max possible = participantCount × 2
       const score =
         participantCount > 0 ? points / (participantCount * 2) : 0;
 
