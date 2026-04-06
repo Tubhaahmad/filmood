@@ -6,12 +6,14 @@ import type { Film } from "@/lib/types";
 interface SearchPanelProps {
   isOpen: boolean;
   films: Film[];
+  label?: string;
   onClose: () => void;
 }
 
 export default function SearchPanel({
   isOpen,
   films,
+  label,
   onClose,
 }: SearchPanelProps) {
   return (
@@ -44,7 +46,7 @@ export default function SearchPanel({
             marginBottom: "16px",
           }}
         >
-          Search results — {films.length} film{films.length !== 1 ? "s" : ""}
+          {label ?? `Search results — ${films.length} film${films.length !== 1 ? "s" : ""}`}
         </div>
 
         {/* Film grid */}

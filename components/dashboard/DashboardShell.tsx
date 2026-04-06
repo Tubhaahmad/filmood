@@ -13,6 +13,7 @@ export default function DashboardShell() {
   const [selectedMoods, setSelectedMoods] = useState<Set<string>>(new Set());
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<Film[]>([]);
+  const [searchLabel, setSearchLabel] = useState<string | undefined>(undefined);
 
   const handleSelectMood = useCallback((key: string) => {
     setSelectedMoods((prev) => {
@@ -30,11 +31,15 @@ export default function DashboardShell() {
     setOpenPanel((prev) => (prev === panel ? null : panel));
   };
 
-  const handleSearchResults = useCallback((films: Film[]) => {
+  const handleSearchResults = useCallback((films: Film[], keepOpen?: boolean) => {
     setSearchResults(films);
-    if (films.length === 0) {
+    if (films.length === 0 && !keepOpen) {
       setOpenPanel((prev) => (prev === "search" ? null : prev));
     }
+  }, []);
+
+  const handleSearchLabel = useCallback((label: string) => {
+    setSearchLabel(label);
   }, []);
 
   return (
@@ -55,7 +60,8 @@ export default function DashboardShell() {
         />
         <SearchBox
           onResults={handleSearchResults}
-          onExpand={() => togglePanel("search")}
+          onLabel={handleSearchLabel}
+          onExpand={() => setOpenPanel("search")}
           isExpanded={openPanel === "search"}
         />
       </div>
@@ -70,6 +76,7 @@ export default function DashboardShell() {
         <SearchPanel
           isOpen={openPanel === "search"}
           films={searchResults}
+          label={searchLabel}
           onClose={() => setOpenPanel(null)}
         />
         <ExplorePanel
