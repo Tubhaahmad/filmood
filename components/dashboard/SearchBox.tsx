@@ -3,12 +3,28 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Film } from "@/lib/types";
 
-type SearchType = "title" | "actor" | "director";
+const BROWSE_CATEGORIES = [
+  { id: "trending", label: "Trending" },
+  { id: "top-rated", label: "Top Rated" },
+  { id: "new-releases", label: "New Releases" },
+  { id: "in-cinemas", label: "In Cinemas" },
+  { id: "by-genre", label: "By Genre" },
+  { id: "streaming-norway", label: "Streaming in Norway" },
+] as const;
 
-const browseTags: { label: string; type: SearchType }[] = [
-  { label: "Film Title", type: "title" },
-  { label: "Actor", type: "actor" },
-  { label: "Director", type: "director" },
+type BrowseCategory = (typeof BROWSE_CATEGORIES)[number]["id"];
+
+const GENRES = [
+  { id: 28, label: "Action" },
+  { id: 35, label: "Comedy" },
+  { id: 18, label: "Drama" },
+  { id: 27, label: "Horror" },
+  { id: 878, label: "Sci-Fi" },
+  { id: 10749, label: "Romance" },
+  { id: 53, label: "Thriller" },
+  { id: 16, label: "Animation" },
+  { id: 80, label: "Crime" },
+  { id: 14, label: "Fantasy" },
 ];
 
 // Simple genre lookup for the trending list display
@@ -51,8 +67,11 @@ export default function SearchBox({
   isExpanded,
 }: SearchBoxProps) {
   const [query, setQuery] = useState("");
-  const [searchType, setSearchType] = useState<SearchType>("title");
   const [isLoading, setIsLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<BrowseCategory | null>(
+    null,
+  );
+  const [activeGenre, setActiveGenre] = useState<number | null>(null);
   const [trending, setTrending] = useState<TrendingItem[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -65,16 +84,36 @@ export default function SearchBox({
   }, []);
 
   const doSearch = useCallback(
-    async (q: string, type: SearchType) => {
+    async (q: string) => {
       if (!q.trim()) {
         onResults?.([]);
         return;
       }
       setIsLoading(true);
+      setActiveCategory(null);
       try {
         const res = await fetch(
-          `/api/movies/search?query=${encodeURIComponent(q.trim())}&type=${type}`,
+          `/api/movies/search?query=${encodeURIComponent(q.trim())}&type=all`,
         );
+        const data = await res.json();
+        onResults?.(data.films ?? []);
+        onExpand?.();
+      } catch {
+        onResults?.([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onResults, onExpand],
+  );
+
+  const doBrowse = useCallback(
+    async (category: BrowseCategory, genreId?: number) => {
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({ category });
+        if (genreId) params.set("genre", String(genreId));
+        const res = await fetch(`/api/movies/browse?${params.toString()}`);
         const data = await res.json();
         onResults?.(data.films ?? []);
         onExpand?.();
@@ -94,11 +133,39 @@ export default function SearchBox({
       onResults?.([]);
       return;
     }
-    debounceRef.current = setTimeout(() => doSearch(query, searchType), 400);
+    debounceRef.current = setTimeout(() => doSearch(query), 400);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, searchType]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleCategoryClick = (categoryId: BrowseCategory) => {
+    if (categoryId === "by-genre") {
+      if (activeCategory === "by-genre") {
+        setActiveCategory(null);
+        setActiveGenre(null);
+        onResults?.([]);
+      } else {
+        setActiveCategory("by-genre");
+        setQuery("");
+      }
+      return;
+    }
+    if (activeCategory === categoryId) {
+      setActiveCategory(null);
+      onResults?.([]);
+      return;
+    }
+    setActiveCategory(categoryId);
+    setQuery("");
+    doBrowse(categoryId);
+  };
+
+  const handleGenreClick = (genreId: number) => {
+    setActiveGenre(genreId);
+    doBrowse("by-genre", genreId);
+  };
+
   return (
     <section
       onClick={onExpand}
@@ -150,6 +217,7 @@ export default function SearchBox({
         Search by film title, actor, or director.
       </p>
 
+      {/* Search Input */}
       <div className="relative mb-3.5" onClick={(e) => e.stopPropagation()}>
         <svg
           className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
@@ -168,13 +236,7 @@ export default function SearchBox({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={
-            searchType === "actor"
-              ? "Search by actor name..."
-              : searchType === "director"
-                ? "Search by director name..."
-                : "Search for a film..."
-          }
+          placeholder="Film, actor, director..."
           aria-label="Search films, actors, or directors"
           style={{
             width: "100%",
@@ -192,18 +254,22 @@ export default function SearchBox({
         )}
       </div>
 
-      <div className="mb-4.5 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
-        {browseTags.map((tag) => (
+      {/* Browse category buttons */}
+      <div
+        className="mb-4 flex flex-wrap gap-2"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {BROWSE_CATEGORIES.map((cat) => (
           <button
-            key={tag.type}
+            key={cat.id}
             type="button"
-            onClick={() => setSearchType(tag.type)}
+            onClick={() => handleCategoryClick(cat.id)}
             style={{
               borderRadius: "999px",
-              border: `1px solid ${searchType === tag.type ? "var(--border-active)" : "var(--border)"}`,
+              border: `1px solid ${activeCategory === cat.id ? "var(--border-active)" : "var(--border)"}`,
               background:
-                searchType === tag.type ? "var(--surface2)" : "var(--bg)",
-              color: searchType === tag.type ? "var(--t1)" : "var(--t2)",
+                activeCategory === cat.id ? "var(--surface2)" : "var(--bg)",
+              color: activeCategory === cat.id ? "var(--t1)" : "var(--t2)",
               fontSize: "12px",
               lineHeight: 1,
               padding: "8px 11px",
@@ -211,61 +277,94 @@ export default function SearchBox({
               transition: "all 0.2s",
             }}
           >
-            {tag.label}
+            {cat.label}
           </button>
         ))}
       </div>
 
-      <div>
+      {/* Genre sub-buttons (shown when By Genre is active) */}
+      {activeCategory === "by-genre" && (
         <div
-          style={{
-            color: "var(--t3)",
-            fontSize: "10px",
-            fontWeight: 600,
-            letterSpacing: "1.8px",
-            textTransform: "uppercase",
-            marginBottom: "10px",
-          }}
+          className="mb-4 flex flex-wrap gap-1.5"
+          onClick={(e) => e.stopPropagation()}
         >
-          Trending Today
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-          {trending.map((item, i) => (
-            <div
-              key={item.id}
-              className="grid grid-cols-[auto_1fr_auto] items-center gap-2.5"
+          {GENRES.map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => handleGenreClick(g.id)}
+              style={{
+                borderRadius: "999px",
+                border: `1px solid ${activeGenre === g.id ? "var(--border-active)" : "var(--border)"}`,
+                background:
+                  activeGenre === g.id ? "var(--surface2)" : "var(--bg)",
+                color: activeGenre === g.id ? "var(--t1)" : "var(--t3)",
+                fontSize: "11px",
+                lineHeight: 1,
+                padding: "6px 10px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
             >
-              <span
-                style={{
-                  color: "var(--t3)",
-                  fontSize: "12px",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span
-                style={{
-                  color: "var(--t1)",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                }}
-              >
-                {item.title}
-              </span>
-              <span style={{ color: "var(--t3)", fontSize: "12px" }}>
-                {GENRE_MAP[item.genre_ids?.[0]] ?? "Film"}
-              </span>
-            </div>
+              {g.label}
+            </button>
           ))}
-          {trending.length === 0 && (
-            <span style={{ color: "var(--t3)", fontSize: "12px" }}>
-              Loading...
-            </span>
-          )}
         </div>
-      </div>
+      )}
+
+      {/* Trending Today list (shown when no search/browse active) */}
+      {!query && !activeCategory && (
+        <div>
+          <div
+            style={{
+              color: "var(--t3)",
+              fontSize: "10px",
+              fontWeight: 600,
+              letterSpacing: "1.8px",
+              textTransform: "uppercase",
+              marginBottom: "10px",
+            }}
+          >
+            Trending Today
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            {trending.map((item, i) => (
+              <div
+                key={item.id}
+                className="grid grid-cols-[auto_1fr_auto] items-center gap-2.5"
+              >
+                <span
+                  style={{
+                    color: "var(--t3)",
+                    fontSize: "12px",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span
+                  style={{
+                    color: "var(--t1)",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {item.title}
+                </span>
+                <span style={{ color: "var(--t3)", fontSize: "12px" }}>
+                  {GENRE_MAP[item.genre_ids?.[0]] ?? "Film"}
+                </span>
+              </div>
+            ))}
+            {trending.length === 0 && (
+              <span style={{ color: "var(--t3)", fontSize: "12px" }}>
+                Loading...
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

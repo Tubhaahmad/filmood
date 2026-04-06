@@ -135,6 +135,17 @@
   }
 }
 
+@keyframes toastIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulse {
   0%,
   100% {
@@ -227,15 +238,6 @@
   90% { transform: translate(-3%, 1%); }
 }
 
-@keyframes glowPulse {
-  0%, 100% {
-    box-shadow: 0 0 20px var(--teal-glow), 0 0 60px transparent;
-  }
-  50% {
-    box-shadow: 0 0 25px var(--teal-glow), 0 0 80px var(--teal-glow);
-  }
-}
-
 /* ═══════════════════════════════════════════════════════════
    Lobby — Cinematic Lounge
    ═══════════════════════════════════════════════════════════ */
@@ -283,13 +285,6 @@
 .lobby-section-2 { animation: fadeUp 0.5s ease both; animation-delay: 120ms; }
 .lobby-section-3 { animation: fadeUp 0.5s ease both; animation-delay: 240ms; }
 .lobby-section-4 { animation: fadeUp 0.5s ease both; animation-delay: 360ms; }
-.lobby-section-5 { animation: fadeUp 0.5s ease both; animation-delay: 480ms; }
-
-/* Activity feed fade mask — top edge fades out */
-.lobby-feed-mask {
-  mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%);
-}
 
 /* ═══════════════════════════════════════════════════════════
    Lobby — Responsive
@@ -315,4 +310,14 @@
   .lobby-steps {
     flex-direction: column;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Swipe — Responsive overrides
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hide keyboard hints and group dots on mobile */
+@media (max-width: 600px) {
+  .swipe-group-dots { display: none !important; }
+  .swipe-key-hints { display: none !important; }
 }

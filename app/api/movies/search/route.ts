@@ -42,7 +42,7 @@ async function searchByTitle(query: string, apiKey: string) {
 async function searchByPerson(
   query: string,
   apiKey: string,
-  role: "actor" | "director"
+  role: "actor" | "director",
 ) {
   // Step 1: find the person
   const personUrl = new URL("https://api.themoviedb.org/3/search/person");
@@ -61,7 +61,7 @@ async function searchByPerson(
 
   // Step 2: fetch their movie credits
   const creditsUrl = new URL(
-    `https://api.themoviedb.org/3/person/${person.id}/movie_credits`
+    `https://api.themoviedb.org/3/person/${person.id}/movie_credits`,
   );
   creditsUrl.searchParams.set("api_key", apiKey);
   creditsUrl.searchParams.set("language", "en-US");
@@ -73,7 +73,10 @@ async function searchByPerson(
   // Step 3: return relevant credits
   if (role === "actor") {
     return (creditsData.cast ?? [])
-      .sort((a: { popularity: number }, b: { popularity: number }) => b.popularity - a.popularity)
+      .sort(
+        (a: { popularity: number }, b: { popularity: number }) =>
+          b.popularity - a.popularity,
+      )
       .slice(0, 20)
       .map(mapFilm);
   }
@@ -81,7 +84,10 @@ async function searchByPerson(
   // director — filter crew by job
   return (creditsData.crew ?? [])
     .filter((c: { job: string }) => c.job === "Director")
-    .sort((a: { popularity: number }, b: { popularity: number }) => b.popularity - a.popularity)
+    .sort(
+      (a: { popularity: number }, b: { popularity: number }) =>
+        b.popularity - a.popularity,
+    )
     .slice(0, 20)
     .map(mapFilm);
 }
@@ -94,7 +100,7 @@ export async function GET(request: NextRequest) {
   if (!query || query.trim() === "") {
     return NextResponse.json(
       { error: "Missing 'query' query parameter" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -102,7 +108,7 @@ export async function GET(request: NextRequest) {
   if (!apiKey) {
     return NextResponse.json(
       { error: "TMDB API key not configured" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 
@@ -113,6 +119,20 @@ export async function GET(request: NextRequest) {
       films = await searchByPerson(query.trim(), apiKey, "actor");
     } else if (type === "director") {
       films = await searchByPerson(query.trim(), apiKey, "director");
+    } else if (type === "all") {
+      const [titleFilms, actorFilms, directorFilms] = await Promise.all([
+        searchByTitle(query.trim(), apiKey),
+        searchByPerson(query.trim(), apiKey, "actor"),
+        searchByPerson(query.trim(), apiKey, "director"),
+      ]);
+      const seen = new Set<number>();
+      films = [...titleFilms, ...actorFilms, ...directorFilms]
+        .filter((f: { id: number }) => {
+          if (seen.has(f.id)) return false;
+          seen.add(f.id);
+          return true;
+        })
+        .slice(0, 20);
     } else {
       films = await searchByTitle(query.trim(), apiKey);
     }
@@ -121,7 +141,7 @@ export async function GET(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
