@@ -7,9 +7,60 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { signupSchema, type SignupFormData } from "@/lib/validations";
 
+function useDynamicBackdrop() {
+  const [backdrops, setBackdrops] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [nextIndex, setNextIndex] = useState(1);
+  const [fading, setFading] = useState(false);
+
+  // Fetch trending movie backdrops on mount
+  useEffect(() => {
+    fetch("/api/movies/trending")
+      .then((r) => r.json())
+      .then((data) => {
+        console.log("trending data:", data);
+        console.log("first film:", data.films[0]);
+        const urls: string[] = (data.results ?? data.films ?? data ?? [])
+          .filter((m: { backdrop_path?: string }) => m.backdrop_path)
+          .slice(0, 10)
+          .map(
+            (m: { backdrop_path: string }) =>
+              `https://image.tmdb.org/t/p/original${m.backdrop_path}`,
+          );
+        console.log("backdrop urls:", urls);
+        if (urls.length > 0) setBackdrops(urls);
+      })
+      .catch(() => {}); // silently fall back to static image
+  }, []);
+
+  useEffect(() => {
+    if (backdrops.length < 2) return;
+    const interval = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % backdrops.length);
+        setNextIndex((prev) => (prev + 1) % backdrops.length);
+        setFading(false);
+      }, 800); // fade duration
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [backdrops]);
+
+  return {
+    current:
+      backdrops[currentIndex] ??
+      "https://image.tmdb.org/t/p/original/wabiQjakDFOPGyGZo5h83Bbtqv2.jpg",
+    next: backdrops[nextIndex] ?? null,
+    fading,
+  };
+}
+
+//signup form//
+
 export default function SignupPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { current, next, fading } = useDynamicBackdrop();
 
   useEffect(() => {
     if (!authLoading && user) router.push("/");
@@ -74,22 +125,37 @@ export default function SignupPage() {
       style={{ background: "var(--bg)", color: "var(--t1)" }}
     >
       {/* ── Left: cinematic panel ── */}
-      <div
-        className="hidden lg:flex flex-col justify-end flex-1 relative overflow-hidden p-12"
-        style={{
-          backgroundImage:
-            "url('https://image.tmdb.org/t/p/original/wabiQjakDFOPGyGZo5h83Bbtqv2.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
+      <div className="hidden lg:flex flex-col justify-end flex-1 relative overflow-hidden p-12">
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-opacity duration-[800ms]"
+          style={{
+            backgroundImage: `url('${current}')`,
+            opacity: fading ? 0 : 1,
+          }}
+        />
+
+        {/* Next backdrop (pre-loaded underneath) */}
+        {next && (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url('${next}')`,
+              opacity: 1,
+              zIndex: -1,
+            }}
+          />
+        )}
+
+        {/* Gradient overlay */}
         <div
           className="absolute inset-0"
           style={{
             background:
               "linear-gradient(to top, rgba(10,10,12,0.94) 0%, rgba(10,10,12,0.45) 50%, rgba(10,10,12,0.18) 100%)",
+            zIndex: 1,
           }}
         />
+
         <div className="relative z-10">
           <Link
             href="/"
