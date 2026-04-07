@@ -13,7 +13,8 @@ export default function DashboardShell() {
   const [selectedMoods, setSelectedMoods] = useState<Set<string>>(new Set());
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<Film[]>([]);
-  const [searchLabel, setSearchLabel] = useState<string | undefined>(undefined);
+  const [panelCategory, setPanelCategory] = useState<string | null>(null);
+  const [panelGenre, setPanelGenre] = useState<number | null>(null);
 
   const handleSelectMood = useCallback((key: string) => {
     setSelectedMoods((prev) => {
@@ -31,16 +32,43 @@ export default function DashboardShell() {
     setOpenPanel((prev) => (prev === panel ? null : panel));
   };
 
-  const handleSearchResults = useCallback((films: Film[], keepOpen?: boolean) => {
-    setSearchResults(films);
-    if (films.length === 0 && !keepOpen) {
-      setOpenPanel((prev) => (prev === "search" ? null : prev));
-    }
-  }, []);
+  const handleSearchResults = useCallback(
+    (films: Film[], keepOpen?: boolean) => {
+      setSearchResults(films);
+      if (films.length === 0 && !keepOpen) {
+        setOpenPanel((prev) => (prev === "search" ? null : prev));
+      }
+    },
+    [],
+  );
 
-  const handleSearchLabel = useCallback((label: string) => {
-    setSearchLabel(label);
-  }, []);
+  // Called from SearchBox pills to keep panel tabs in sync
+  const handleActiveCategory = useCallback(
+    (category: string | null, genreId?: number | null) => {
+      setPanelCategory(category);
+      setPanelGenre(genreId ?? null);
+    },
+    [],
+  );
+
+  // Called from SearchPanel tabs — fetches data and updates results
+  const handlePanelCategoryChange = useCallback(
+    async (category: string, genreId?: number) => {
+      setPanelCategory(category);
+      setPanelGenre(genreId ?? null);
+      setOpenPanel("search");
+      try {
+        const params = new URLSearchParams({ category });
+        if (genreId) params.set("genre", String(genreId));
+        const res = await fetch(`/api/movies/browse?${params.toString()}`);
+        const data = await res.json();
+        setSearchResults(data.films ?? []);
+      } catch {
+        // silently ignore network errors
+      }
+    },
+    [],
+  );
 
   return (
     <div className="mx-auto" style={{ maxWidth: "1400px" }}>
@@ -60,7 +88,7 @@ export default function DashboardShell() {
         />
         <SearchBox
           onResults={handleSearchResults}
-          onLabel={handleSearchLabel}
+          onActiveCategory={handleActiveCategory}
           onExpand={() => setOpenPanel("search")}
           isExpanded={openPanel === "search"}
         />
@@ -76,7 +104,9 @@ export default function DashboardShell() {
         <SearchPanel
           isOpen={openPanel === "search"}
           films={searchResults}
-          label={searchLabel}
+          activeCategory={panelCategory}
+          activeGenre={panelGenre}
+          onCategoryChange={handlePanelCategoryChange}
           onClose={() => setOpenPanel(null)}
         />
         <ExplorePanel

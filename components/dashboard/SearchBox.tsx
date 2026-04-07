@@ -175,6 +175,7 @@ interface TrendingItem {
 interface SearchBoxProps {
   onResults?: (films: Film[], keepOpen?: boolean) => void;
   onLabel?: (label: string) => void;
+  onActiveCategory?: (category: string | null, genreId?: number | null) => void;
   onExpand?: () => void;
   isExpanded?: boolean;
 }
@@ -182,6 +183,7 @@ interface SearchBoxProps {
 export default function SearchBox({
   onResults,
   onLabel,
+  onActiveCategory,
   onExpand,
   isExpanded,
 }: SearchBoxProps) {
@@ -194,6 +196,11 @@ export default function SearchBox({
   const [trending, setTrending] = useState<TrendingItem[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync active category/genre up to parent so the panel tabs stay in sync
+  useEffect(() => {
+    onActiveCategory?.(activeCategory, activeGenre);
+  }, [activeCategory, activeGenre]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch trending movies on mount
   useEffect(() => {

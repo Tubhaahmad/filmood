@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get("category");
   const genreId = searchParams.get("genre");
+  const page = searchParams.get("page") ?? "1";
 
   const apiKey = process.env.TMDB_API_KEY;
   if (!apiKey) {
@@ -48,13 +49,14 @@ export async function GET(request: NextRequest) {
         url = new URL("https://api.themoviedb.org/3/trending/movie/day");
         url.searchParams.set("api_key", apiKey);
         url.searchParams.set("language", "en-US");
+        url.searchParams.set("page", page);
         break;
       }
       case "top-rated": {
         url = new URL("https://api.themoviedb.org/3/movie/top_rated");
         url.searchParams.set("api_key", apiKey);
         url.searchParams.set("language", "en-US");
-        url.searchParams.set("page", "1");
+        url.searchParams.set("page", page);
         break;
       }
       case "new-releases": {
@@ -64,7 +66,7 @@ export async function GET(request: NextRequest) {
         url.searchParams.set("sort_by", "release_date.desc");
         url.searchParams.set("include_adult", "false");
         url.searchParams.set("include_video", "false");
-        url.searchParams.set("page", "1");
+        url.searchParams.set("page", page);
         url.searchParams.set("vote_count.gte", "10");
         const today = new Date();
         const oneYearAgo = new Date(today);
@@ -83,23 +85,17 @@ export async function GET(request: NextRequest) {
         url = new URL("https://api.themoviedb.org/3/movie/now_playing");
         url.searchParams.set("api_key", apiKey);
         url.searchParams.set("language", "en-US");
-        url.searchParams.set("page", "1");
+        url.searchParams.set("page", page);
         url.searchParams.set("region", "NO");
         break;
       }
       case "by-genre": {
-        if (!genreId) {
-          return NextResponse.json(
-            { error: "Missing 'genre' query parameter" },
-            { status: 400 },
-          );
-        }
         url = new URL("https://api.themoviedb.org/3/discover/movie");
         url.searchParams.set("api_key", apiKey);
         url.searchParams.set("language", "en-US");
-        url.searchParams.set("with_genres", genreId);
+        if (genreId) url.searchParams.set("with_genres", genreId);
         url.searchParams.set("sort_by", "popularity.desc");
-        url.searchParams.set("page", "1");
+        url.searchParams.set("page", page);
         break;
       }
       case "streaming-norway": {
@@ -109,7 +105,7 @@ export async function GET(request: NextRequest) {
         url.searchParams.set("sort_by", "popularity.desc");
         url.searchParams.set("watch_region", "NO");
         url.searchParams.set("with_watch_monetization_types", "flatrate");
-        url.searchParams.set("page", "1");
+        url.searchParams.set("page", page);
         break;
       }
       default:
@@ -123,8 +119,9 @@ export async function GET(request: NextRequest) {
     if (!res.ok) throw new Error("Failed to fetch from TMDB");
     const data = await res.json();
 
-    const films = (data.results ?? []).slice(0, 20).map(mapFilm);
-    return NextResponse.json({ films });
+    const films = (data.results ?? []).map(mapFilm);
+    const totalPages: number = data.total_pages ?? 1;
+    return NextResponse.json({ films, totalPages });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Internal server error";
