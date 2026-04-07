@@ -8,6 +8,7 @@ interface SearchPanelProps {
   films: Film[];
   label?: string;
   onClose: () => void;
+  embedded?: boolean;
 }
 
 export default function SearchPanel({
@@ -15,7 +16,64 @@ export default function SearchPanel({
   films,
   label,
   onClose,
+  embedded,
 }: SearchPanelProps) {
+  const content = (
+    <>
+      {/* Label */}
+      <div
+        style={{
+          fontSize: "10px",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: "1.8px",
+          color: "var(--blue)",
+          marginBottom: "16px",
+        }}
+      >
+        {label ?? `Search results — ${films.length} film${films.length !== 1 ? "s" : ""}`}
+      </div>
+
+      {/* Film grid */}
+      <FilmGrid films={films} />
+
+      {/* Close row */}
+      <div
+        className="flex items-center gap-2.5"
+        style={{
+          borderTop: "1px solid var(--border)",
+          paddingTop: "14px",
+          marginTop: "16px",
+        }}
+      >
+        <button
+          onClick={onClose}
+          className="btn-panel-outline cursor-pointer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "9px 18px",
+            borderRadius: "10px",
+            background: "none",
+            color: "var(--t1)",
+            fontSize: "13px",
+            fontWeight: 500,
+            lineHeight: 1,
+            border: "1px solid var(--border-h)",
+            transition: "all 0.25s",
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </>
+  );
+
+  // Inside bottom sheet: render content directly
+  if (embedded) {
+    return <div>{content}</div>;
+  }
+
   return (
     <div
       style={{
@@ -35,52 +93,7 @@ export default function SearchPanel({
           padding: "22px",
         }}
       >
-        {/* Label */}
-        <div
-          style={{
-            fontSize: "10px",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "1.8px",
-            color: "#527bc7",
-            marginBottom: "16px",
-          }}
-        >
-          {label ?? `Search results — ${films.length} film${films.length !== 1 ? "s" : ""}`}
-        </div>
-
-        {/* Film grid */}
-        <FilmGrid films={films} />
-
-        {/* Close row */}
-        <div
-          className="flex items-center gap-2.5"
-          style={{
-            borderTop: "1px solid var(--border)",
-            paddingTop: "14px",
-            marginTop: "16px",
-          }}
-        >
-          <button
-            onClick={onClose}
-            className="cursor-pointer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "9px 18px",
-              borderRadius: "10px",
-              background: "none",
-              color: "var(--t2)",
-              fontSize: "13px",
-              fontWeight: 500,
-              lineHeight: 1,
-              border: "1px solid var(--border)",
-              transition: "all 0.25s",
-            }}
-          >
-            Close
-          </button>
-        </div>
+        {content}
       </div>
     </div>
   );

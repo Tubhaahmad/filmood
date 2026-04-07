@@ -25,11 +25,13 @@ export default function MoodBox({
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
-        border: `1px solid ${isExpanded ? "var(--border-active)" : "var(--border)"}`,
+        border: `1px solid ${isExpanded ? "var(--gold)" : "var(--border)"}`,
         borderRadius: "16px",
         padding: "22px",
         transition: "border-color 0.3s, box-shadow 0.3s",
-        boxShadow: isExpanded ? "0 0 0 1px var(--border-active)" : "none",
+        boxShadow: isExpanded
+          ? "0 0 0 1px var(--gold), 0 0 16px var(--gold-glow)"
+          : "none",
       }}
     >
       {/* Label */}
@@ -67,7 +69,7 @@ export default function MoodBox({
 
       {/* 2x2 preview grid */}
       <div
-        className="grid grid-cols-2 gap-[8px] mb-[10px]"
+        className="grid grid-cols-2 gap-4 mb-2.5"
         onClick={(e) => e.stopPropagation()}
       >
         {previewMoods.map((mood) => (
@@ -90,15 +92,15 @@ export default function MoodBox({
           e.stopPropagation();
           onExpand();
         }}
-        className="flex w-full items-center justify-center gap-[6px] cursor-pointer"
+        className="btn-panel-outline flex w-full items-center justify-center gap-1.5 cursor-pointer"
         style={{
           padding: "9px",
           borderRadius: "10px",
-          background: "var(--surface2)",
-          border: "1px solid var(--border)",
-          color: "var(--t2)",
+          background: "var(--gold-soft)",
+          border: "1px solid rgba(196, 163, 90, 0.2)",
+          color: "var(--gold)",
           fontSize: "12px",
-          fontWeight: 500,
+          fontWeight: 600,
           transition: "all 0.25s",
         }}
       >

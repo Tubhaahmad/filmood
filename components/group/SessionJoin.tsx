@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 
 interface SessionJoinProps {
   initialCode?: string;
@@ -11,7 +12,7 @@ interface SessionJoinProps {
 const CODE_LENGTH = 6;
 
 export default function SessionJoin({ initialCode = "" }: SessionJoinProps) {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   // Pad initial code to array of individual characters
@@ -100,13 +101,7 @@ export default function SessionJoin({ initialCode = "" }: SessionJoinProps) {
     setLoading(true);
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (session?.access_token) {
-        headers.Authorization = `Bearer ${session.access_token}`;
-      }
-
+      const headers = await getAuthHeaders();
       const body: Record<string, string> = { code };
       if (!user) {
         body.nickname = nickname.trim();

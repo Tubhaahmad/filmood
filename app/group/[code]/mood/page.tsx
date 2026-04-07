@@ -38,6 +38,13 @@ export default function GroupMoodPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const { participantId } = useParticipantId();
   const redirectingRef = useRef(false);
+  const buildingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (buildingTimerRef.current) clearTimeout(buildingTimerRef.current);
+    };
+  }, []);
 
   const fetchState = useCallback(async () => {
     if (redirectingRef.current) return;
@@ -57,7 +64,7 @@ export default function GroupMoodPage() {
       if (data.session.status === "swiping") {
         setPhase("building");
         redirectingRef.current = true;
-        setTimeout(() => {
+        buildingTimerRef.current = setTimeout(() => {
           router.replace(`/group/${code}/swipe`);
         }, 1500);
         return;
@@ -169,7 +176,7 @@ export default function GroupMoodPage() {
       if (data.allDone) {
         setPhase("building");
         redirectingRef.current = true;
-        setTimeout(() => {
+        buildingTimerRef.current = setTimeout(() => {
           router.replace(`/group/${code}/swipe`);
         }, 1500);
       } else {

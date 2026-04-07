@@ -36,11 +36,13 @@ export default function ExploreBox({ onExpand, isExpanded }: ExploreBoxProps) {
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
-        border: `1px solid ${isExpanded ? "var(--border-active)" : "var(--border)"}`,
+        border: `1px solid ${isExpanded ? "var(--teal)" : "var(--border)"}`,
         borderRadius: "16px",
         padding: "22px",
         transition: "border-color var(--t-slow), box-shadow var(--t-slow)",
-        boxShadow: isExpanded ? "0 0 0 1px var(--border-active)" : "none",
+        boxShadow: isExpanded
+          ? "0 0 0 1px var(--teal), 0 0 16px var(--teal-glow)"
+          : "none",
       }}
     >
       {/* Label */}
@@ -157,15 +159,15 @@ export default function ExploreBox({ onExpand, isExpanded }: ExploreBoxProps) {
           e.stopPropagation();
           onExpand();
         }}
-        className="flex w-full items-center justify-center gap-1.5 cursor-pointer"
+        className="btn-panel-outline flex w-full items-center justify-center gap-1.5 cursor-pointer"
         style={{
           padding: "9px",
           borderRadius: "10px",
-          background: "var(--surface2)",
-          border: "1px solid var(--border)",
-          color: "var(--t2)",
+          background: "var(--teal-soft)",
+          border: "1px solid rgba(90, 170, 143, 0.2)",
+          color: "var(--teal)",
           fontSize: "12px",
-          fontWeight: 500,
+          fontWeight: 600,
           transition: "all var(--t-base)",
         }}
       >
