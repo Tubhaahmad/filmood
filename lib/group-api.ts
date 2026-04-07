@@ -86,19 +86,17 @@ export async function resolveParticipant<
     };
   }
 
-  const query = supabase
+  const baseQuery = supabase
     .from("session_participants")
     .select(selectFields)
     .eq("session_id", sessionId);
 
-  if (user) {
-    query.eq("user_id", user.id);
-  } else {
-    query.eq("id", participantId!);
-  }
+  const filteredQuery = user
+    ? baseQuery.eq("user_id", user.id)
+    : baseQuery.eq("id", participantId!);
 
   const { data: participant, error: participantError } =
-    await query.single();
+    await filteredQuery.single();
 
   if (participantError || !participant) {
     return {

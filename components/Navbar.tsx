@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useAuth } from "./AuthProvider";
+import FilmoodLogo from "./dashboard/FilmoodLogo";
 
 function getThemeSnapshot(): "dark" | "light" {
   return document.documentElement.getAttribute("data-theme") === "light"
@@ -50,14 +51,16 @@ export default function Navbar() {
     >
       <Link
         href="/"
-        className="font-serif no-underline"
+        className="font-serif no-underline flex items-center"
         style={{
+          gap: "8px",
           fontSize: "22px",
           fontWeight: 600,
           color: "var(--t1)",
           letterSpacing: "-0.3px",
         }}
       >
+        <FilmoodLogo variant="nav" size={28} />
         Filmood
       </Link>
 

@@ -317,11 +317,13 @@ export default function SearchBox({
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
-        border: `1px solid ${isExpanded ? "var(--border-active)" : "var(--border)"}`,
+        border: `1px solid ${isExpanded ? "var(--blue)" : "var(--border)"}`,
         borderRadius: "16px",
         padding: "22px",
         transition: "border-color 0.3s, box-shadow 0.3s",
-        boxShadow: isExpanded ? "0 0 0 1px var(--border-active)" : "none",
+        boxShadow: isExpanded
+          ? "0 0 0 1px var(--blue), 0 0 16px var(--blue-glow)"
+          : "none",
         minHeight: "100%",
       }}
     >
@@ -331,7 +333,7 @@ export default function SearchBox({
           fontWeight: 600,
           textTransform: "uppercase",
           letterSpacing: "1.8px",
-          color: "#527bc7",
+          color: "var(--blue)",
           marginBottom: "12px",
         }}
       >

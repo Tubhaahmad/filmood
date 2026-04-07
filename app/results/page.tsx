@@ -178,6 +178,9 @@ function Hero({ moods, filmCount }: { moods: string[]; filmCount: number }) {
 function ResultsContent() {
   const searchParams = useSearchParams();
   const mood = searchParams.get("mood");
+  const runtime = searchParams.get("runtime");
+  const language = searchParams.get("language");
+  const exclude = searchParams.get("exclude");
 
   const [films, setFilms] = useState<Film[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
@@ -202,8 +205,14 @@ function ResultsContent() {
 
         setMoods(parsedMoods);
 
+        // Build API URL with mood
+        const params = new URLSearchParams({ mood });
+        if (runtime) params.set("runtime", runtime);
+        if (language) params.set("language", language);
+        if (exclude) params.set("exclude", exclude);
+
         const res = await fetch(
-          `/api/movies/discover?mood=${encodeURIComponent(mood)}`,
+          `/api/movies/discover?${params.toString()}`,
         );
 
         const data = await res.json();
@@ -225,7 +234,7 @@ function ResultsContent() {
     };
 
     fetchFilms();
-  }, [mood]);
+  }, [mood, runtime, language, exclude]);
   if (!mood) {
     return (
       <div className="text-center py-20">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 export interface Toast {
   id: string;
@@ -15,6 +15,15 @@ const FADE_DURATION = 400;
 export function useToasts() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const timerMap = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Clear all pending timers on unmount
+  useEffect(() => {
+    const map = timerMap.current;
+    return () => {
+      for (const t of map.values()) clearTimeout(t);
+      map.clear();
+    };
+  }, []);
 
   const addToast = useCallback((message: string, accent = "var(--teal)") => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
