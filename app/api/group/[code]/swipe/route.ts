@@ -1,59 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
-import { isSessionExpired } from "@/lib/group";
+import { resolveSession, resolveParticipant } from "@/lib/group-api";
 import type { DeckFilm, SwipeVote } from "@/lib/types";
 
 const VALID_VOTES: SwipeVote[] = ["yes", "no", "maybe"];
 
 // GET /api/group/[code]/swipe
 // Returns the current participant's swipe progress for this session.
-// Used to resume swiping after a page refresh
-// movies that have already been voted on.
+// Used to resume swiping after a page refresh.
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
 
-  if (!code || code.length !== 6) {
-    return NextResponse.json(
-      { error: "Invalid session code" },
-      { status: 400 },
-    );
-  }
-
-  const upperCode = code.toUpperCase();
-
   const user = await getAuthUser(request);
   const participantId = request.nextUrl.searchParams.get("participantId");
-
-  if (!user && !participantId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   try {
     const supabase = getSupabaseAdmin();
 
-    // Fetch session with movie deck
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, status, movie_deck, created_at")
-      .eq("code", upperCode)
-      .single();
-
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
-
-    if (isSessionExpired(session.created_at)) {
-      return NextResponse.json(
-        { error: "Session expired" },
-        { status: 410 },
-      );
-    }
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; status: string; movie_deck: DeckFilm[] | null; created_at: string;
+    }>(supabase, code, "id, status, movie_deck, created_at");
+    if (sessionErr) return sessionErr;
 
     if (session.status !== "swiping" && session.status !== "done") {
       return NextResponse.json(
@@ -62,26 +32,10 @@ export async function GET(
       );
     }
 
-    // Find the participant
-    const participantQuery = supabase
-      .from("session_participants")
-      .select("id, has_swiped")
-      .eq("session_id", session.id);
-
-    if (user) {
-      participantQuery.eq("user_id", user.id);
-    } else {
-      participantQuery.eq("id", participantId!);
-    }
-
-    const { data: participant } = await participantQuery.single();
-
-    if (!participant) {
-      return NextResponse.json(
-        { error: "You are not in this session" },
-        { status: 403 },
-      );
-    }
+    const { participant, error: partErr } = await resolveParticipant<{
+      id: string; has_swiped: boolean;
+    }>(supabase, session.id, user, participantId, "id, has_swiped");
+    if (partErr) return partErr;
 
     // Fetch this participant's existing swipes
     const { data: swipes } = await supabase
@@ -93,13 +47,14 @@ export async function GET(
     // Fetch all participants' completion status
     const { data: allParticipants } = await supabase
       .from("session_participants")
-      .select("id, nickname, has_swiped")
+      .select("id, user_id, nickname, has_swiped")
       .eq("session_id", session.id);
 
     const deck: DeckFilm[] = session.movie_deck ?? [];
     const votedIds = new Set((swipes ?? []).map((s) => s.movie_id));
 
     return NextResponse.json({
+      sessionId: session.id,
       deck,
       swipes: swipes ?? [],
       progress: {
@@ -108,6 +63,7 @@ export async function GET(
       },
       participants: (allParticipants ?? []).map((p) => ({
         id: p.id,
+        user_id: p.user_id,
         nickname: p.nickname,
         has_swiped: p.has_swiped,
       })),
@@ -129,15 +85,6 @@ export async function POST(
   { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
-
-  if (!code || code.length !== 6) {
-    return NextResponse.json(
-      { error: "Invalid session code" },
-      { status: 400 },
-    );
-  }
-
-  const upperCode = code.toUpperCase();
 
   const user = await getAuthUser(request);
   let body: { participantId?: string; movieId?: number; vote?: string };
@@ -165,33 +112,13 @@ export async function POST(
     );
   }
 
-  if (!user && !participantId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   try {
     const supabase = getSupabaseAdmin();
 
-    // Fetch session with movie deck
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, status, movie_deck, created_at")
-      .eq("code", upperCode)
-      .single();
-
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
-
-    if (isSessionExpired(session.created_at)) {
-      return NextResponse.json(
-        { error: "Session expired" },
-        { status: 410 },
-      );
-    }
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; status: string; movie_deck: DeckFilm[] | null; created_at: string;
+    }>(supabase, code, "id, status, movie_deck, created_at");
+    if (sessionErr) return sessionErr;
 
     if (session.status !== "swiping") {
       return NextResponse.json(
@@ -211,26 +138,10 @@ export async function POST(
       );
     }
 
-    // Find the participant
-    const participantQuery = supabase
-      .from("session_participants")
-      .select("id, has_swiped")
-      .eq("session_id", session.id);
-
-    if (user) {
-      participantQuery.eq("user_id", user.id);
-    } else {
-      participantQuery.eq("id", participantId!);
-    }
-
-    const { data: participant } = await participantQuery.single();
-
-    if (!participant) {
-      return NextResponse.json(
-        { error: "You are not in this session" },
-        { status: 403 },
-      );
-    }
+    const { participant, error: partErr } = await resolveParticipant<{
+      id: string; has_swiped: boolean;
+    }>(supabase, session.id, user, participantId ?? null, "id, has_swiped");
+    if (partErr) return partErr;
 
     if (participant.has_swiped) {
       return NextResponse.json(

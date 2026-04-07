@@ -1,16 +1,7 @@
 "use client";
 
 import type { SwipeVote } from "@/lib/types";
-
-// Same avatar palette as the swipe page so participant identity stays consistent
-// across the flow (lobby → mood → swipe → results)
-const AVATAR_COLORS = [
-  { bg: "var(--gold)", text: "#0a0a0c" },
-  { bg: "var(--teal)", text: "#0a0a0c" },
-  { bg: "var(--rose)", text: "#fff" },
-  { bg: "var(--blue)", text: "#fff" },
-  { bg: "var(--violet)", text: "#fff" },
-];
+import { AVATAR_COLORS } from "@/lib/constants";
 
 // Vote → color token. Kept as CSS vars so both themes resolve correctly.
 const VOTE_COLORS: Record<SwipeVote, string> = {

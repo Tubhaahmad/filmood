@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 import Link from "next/link";
 
 export default function SessionCreator() {
@@ -19,10 +20,7 @@ export default function SessionCreator() {
     try {
       const res = await fetch("/api/group/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
+        headers: await getAuthHeaders(),
       });
 
       const data = await res.json();

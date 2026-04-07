@@ -5,20 +5,8 @@ import type { MatchResult, Provider } from "@/lib/types";
 import { moodMap } from "@/lib/moodMap";
 import { genreMap } from "@/lib/genres";
 import { useMediaQuery } from "@/lib/useMediaQuery";
+import { ACCENT_VARS } from "@/lib/constants";
 import VoteBreakdown from "./VoteBreakdown";
-
-// Same accent palette used by SwipeCard — keeps mood chip colors consistent
-const accentVars: Record<
-  string,
-  { color: string; bg: string; border: string }
-> = {
-  gold: { color: "var(--gold)", bg: "var(--gold-soft)", border: "rgba(196,163,90,0.25)" },
-  blue: { color: "var(--blue)", bg: "var(--blue-soft)", border: "rgba(91,143,212,0.25)" },
-  rose: { color: "var(--rose)", bg: "var(--rose-soft)", border: "rgba(196,107,124,0.25)" },
-  violet: { color: "var(--violet)", bg: "var(--violet-soft)", border: "rgba(139,108,196,0.25)" },
-  teal: { color: "var(--teal)", bg: "var(--teal-soft)", border: "rgba(90,170,143,0.25)" },
-  ember: { color: "var(--ember)", bg: "var(--ember-soft)", border: "rgba(212,122,74,0.25)" },
-};
 
 interface TopPickCardProps {
   result: MatchResult;
@@ -188,7 +176,7 @@ export default function TopPickCard({
           {(moodTags.length > 0 || genres.length > 0) && (
             <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
               {moodTags.map((tag) => {
-                const vars = accentVars[tag.accent] ?? accentVars.gold;
+                const vars = ACCENT_VARS[tag.accent as keyof typeof ACCENT_VARS] ?? ACCENT_VARS.gold;
                 return (
                   <span
                     key={tag.label}

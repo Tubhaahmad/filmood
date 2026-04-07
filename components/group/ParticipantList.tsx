@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { AVATAR_COLORS } from "@/lib/constants";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 
 interface Participant {
   id: string;
@@ -15,17 +17,7 @@ interface ParticipantListProps {
   hostId: string;
   isHost: boolean;
   sessionCode: string;
-  accessToken: string | undefined;
 }
-
-const AVATAR_COLORS = [
-  "var(--teal)",
-  "var(--gold)",
-  "var(--blue)",
-  "var(--violet)",
-  "var(--rose)",
-  "var(--ember)",
-];
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -40,7 +32,6 @@ export default function ParticipantList({
   hostId,
   isHost,
   sessionCode,
-  accessToken,
 }: ParticipantListProps) {
   const [kickingId, setKickingId] = useState<string | null>(null);
   const [confirmKickId, setConfirmKickId] = useState<string | null>(null);
@@ -54,10 +45,7 @@ export default function ParticipantList({
     try {
       const res = await fetch(`/api/group/${sessionCode}/kick`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ participantId }),
       });
 
@@ -93,7 +81,7 @@ export default function ParticipantList({
     >
       {participants.map((p, i) => {
         const isThisHost = p.user_id === hostId;
-        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+        const color = AVATAR_COLORS[i % AVATAR_COLORS.length].bg;
 
         return (
           <div

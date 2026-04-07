@@ -79,7 +79,7 @@ export interface GroupSession {
   code: string;
   host_id: string;
   status: SessionStatus;
-  movie_deck: Film[] | null;
+  movie_deck: DeckFilm[] | null;
   created_at: string;
 }
 

@@ -81,7 +81,7 @@ export default function SwipeDeck({
   const votingRef = useRef(false);
 
   useEffect(() => {
-    setCurrentIndex(startIndex);
+    setCurrentIndex((prev) => Math.max(prev, startIndex));
   }, [startIndex]);
 
   const triggerVote = useCallback(
