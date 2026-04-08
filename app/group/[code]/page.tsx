@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { useParticipantId } from "@/lib/useParticipantId";
+import { useGroupRealtime } from "@/lib/useGroupRealtime";
 import ParticipantList from "@/components/group/ParticipantList";
 import LobbyActions from "@/components/group/LobbyActions";
 import InviteStrip from "@/components/group/InviteStrip";
@@ -32,7 +33,7 @@ export default function LobbyPage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
   const router = useRouter();
-  const { user, session: authSession, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -41,15 +42,10 @@ export default function LobbyPage() {
   const [elapsed, setElapsed] = useState("");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [participantId, setParticipantId] = useState<string | null>(null);
+  const { participantId } = useParticipantId();
   const prevParticipantsRef = useRef<Participant[]>([]);
   const redirectingRef = useRef(false);
   const { toasts, addToast } = useToasts();
-
-  useEffect(() => {
-    const stored = localStorage.getItem("participantId");
-    if (stored) setParticipantId(stored);
-  }, []);
 
   const isHost = user ? user.id === sessionData?.host_id : false;
 
@@ -135,9 +131,6 @@ export default function LobbyPage() {
     }
   }, [code, router, diffParticipants]);
 
-  const fetchLobbyRef = useRef(fetchLobby);
-  fetchLobbyRef.current = fetchLobby;
-
   // Initial fetch
   useEffect(() => {
     if (!authLoading) {
@@ -152,60 +145,14 @@ export default function LobbyPage() {
     }
   }, [sessionData, sessionId]);
 
-  // Realtime subscriptions
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const participantsChannel = supabase
-      .channel(`lobby-participants-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "session_participants",
-          filter: `session_id=eq.${sessionId}`,
-        },
-        () => {
-          fetchLobbyRef.current();
-        },
-      )
-      .subscribe();
-
-    const sessionChannel = supabase
-      .channel(`lobby-session-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "sessions",
-          filter: `id=eq.${sessionId}`,
-        },
-        (payload) => {
-          if (payload.eventType === "DELETE") {
-            router.replace("/group");
-            return;
-          }
-          fetchLobbyRef.current();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(participantsChannel);
-      supabase.removeChannel(sessionChannel);
-    };
-  }, [sessionId, code, router]);
-
-  // Polling fallback every 2s
-  useEffect(() => {
-    if (loading) return;
-    const interval = setInterval(() => {
-      fetchLobbyRef.current();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [loading]);
+  // Realtime + polling
+  useGroupRealtime({
+    sessionId,
+    channelPrefix: "lobby",
+    onUpdate: fetchLobby,
+    onDelete: () => router.replace("/group"),
+    paused: loading,
+  });
 
   // Session timer
   useEffect(() => {
@@ -429,7 +376,6 @@ export default function LobbyPage() {
               hostId={sessionData.host_id}
               isHost={isHost}
               sessionCode={code}
-              accessToken={authSession?.access_token}
             />
           </div>
 
@@ -449,7 +395,6 @@ export default function LobbyPage() {
               allReady={allReady}
               selfReady={selfReady}
               sessionCode={code}
-              accessToken={authSession?.access_token}
               participantId={participantId}
               onSessionStarted={() => {
                 redirectingRef.current = true;

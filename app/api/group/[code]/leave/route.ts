@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
+import { resolveSession, resolveParticipant } from "@/lib/group-api";
 
 // DELETE /api/group/[code]/leave
 // Removes a participant from the session.
@@ -21,33 +22,14 @@ export async function DELETE(
     // No body is fine for authenticated users
   }
 
-  // Must have some way to identify the participant
-  if (!user && !participantId) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
-
   try {
     const supabase = getSupabaseAdmin();
-    const upperCode = code.toUpperCase();
 
-    // Fetch the session
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, host_id, status")
-      .eq("code", upperCode)
-      .single();
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; host_id: string; status: string; created_at: string;
+    }>(supabase, code, "id, host_id, status, created_at");
+    if (sessionErr) return sessionErr;
 
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
-
-    // Can only leave during lobby phase
     if (session.status !== "lobby") {
       return NextResponse.json(
         { error: "Cannot leave a session that has already started" },
@@ -55,27 +37,10 @@ export async function DELETE(
       );
     }
 
-    // Find the participant row
-    let participantQuery = supabase
-      .from("session_participants")
-      .select("id, user_id")
-      .eq("session_id", session.id);
-
-    if (user) {
-      participantQuery = participantQuery.eq("user_id", user.id);
-    } else {
-      participantQuery = participantQuery.eq("id", participantId!);
-    }
-
-    const { data: participant, error: participantError } =
-      await participantQuery.single();
-
-    if (participantError || !participant) {
-      return NextResponse.json(
-        { error: "You are not in this session" },
-        { status: 404 },
-      );
-    }
+    const { participant, error: partErr } = await resolveParticipant<{
+      id: string; user_id: string | null;
+    }>(supabase, session.id, user, participantId, "id, user_id");
+    if (partErr) return partErr;
 
     // Check if this participant is the host
     const isHost = participant.user_id === session.host_id;

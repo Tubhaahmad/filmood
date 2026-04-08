@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useAuth } from "./AuthProvider";
+import FilmoodLogo from "./dashboard/FilmoodLogo";
 
 function getThemeSnapshot(): "dark" | "light" {
   return document.documentElement.getAttribute("data-theme") === "light"
@@ -50,12 +51,20 @@ export default function Navbar() {
     >
       <Link
         href="/"
-        className="font-serif no-underline"
-        style={{ fontSize: "22px", fontWeight: 600, color: "var(--t1)", letterSpacing: "-0.3px" }}
+        className="font-serif no-underline flex items-center"
+        style={{
+          gap: "8px",
+          fontSize: "22px",
+          fontWeight: 600,
+          color: "var(--t1)",
+          letterSpacing: "-0.3px",
+        }}
       >
+        <FilmoodLogo variant="nav" size={28} />
         Filmood
       </Link>
 
+      {/* Desktop */}
       <div className="hidden md:flex items-center gap-2.5">
         <button
           onClick={toggleTheme}
@@ -75,6 +84,7 @@ export default function Navbar() {
           {theme === "dark" ? "☾" : "☀"}
         </button>
 
+        {/* Guest only */}
         {!loading && !user && (
           <div className="flex gap-1.5">
             <Link
@@ -109,43 +119,59 @@ export default function Navbar() {
           </div>
         )}
 
+        {/* Logged in only */}
         {!loading && user && (
           <div className="flex items-center gap-2.5">
             <button
               onClick={signOut}
               className="cursor-pointer"
-              style={{ fontSize: "12px", fontWeight: 500, color: "var(--t3)", background: "none", border: "none" }}
+              style={{
+                fontSize: "12px",
+                fontWeight: 500,
+                color: "var(--t3)",
+                background: "none",
+                border: "none",
+              }}
             >
               Sign out
             </button>
-            <div
-              className="flex items-center justify-center"
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                background: "var(--gold)",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "#0a0a0c",
-              }}
-            >
-              {user.email?.[0]?.toUpperCase() || "U"}
-            </div>
+            <Link href="/profile" style={{ textDecoration: "none" }}>
+              <div
+                className="flex items-center justify-center transition-shadow duration-200 hover:shadow-[0_0_0_2px_var(--gold)]"
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  background: "var(--gold)",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#0a0a0c",
+                }}
+              >
+                {user.email?.[0]?.toUpperCase() || "U"}
+              </div>
+            </Link>
           </div>
         )}
       </div>
 
+      {/* Mobile hamburger */}
       <button
         className="md:hidden cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle menu"
         aria-expanded={isOpen}
-        style={{ fontSize: "22px", color: "var(--t1)", background: "none", border: "none" }}
+        style={{
+          fontSize: "22px",
+          color: "var(--t1)",
+          background: "none",
+          border: "none",
+        }}
       >
         {isOpen ? "✕" : "☰"}
       </button>
 
+      {/* Mobile menu */}
       {isOpen && (
         <div
           className="absolute left-0 right-0 top-full flex flex-col items-end gap-4 md:hidden"
@@ -154,18 +180,65 @@ export default function Navbar() {
           <button
             onClick={toggleTheme}
             className="cursor-pointer"
-            style={{ fontSize: "14px", color: "var(--t2)", background: "none", border: "none" }}
+            style={{
+              fontSize: "14px",
+              color: "var(--t2)",
+              background: "none",
+              border: "none",
+            }}
           >
             {theme === "dark" ? "☾ Dark" : "☀ Light"}
           </button>
+
+          {/* Guest only */}
           {!loading && !user && (
             <>
-              <Link href="/login" onClick={() => setIsOpen(false)} className="no-underline" style={{ fontSize: "14px", color: "var(--t2)" }}>Log in</Link>
-              <Link href="/signup" onClick={() => setIsOpen(false)} className="no-underline" style={{ fontSize: "14px", color: "var(--gold)" }}>Sign up</Link>
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--t2)" }}
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--gold)" }}
+              >
+                Sign up
+              </Link>
             </>
           )}
+
+          {/* Logged in only */}
           {!loading && user && (
-            <button onClick={() => { signOut(); setIsOpen(false); }} className="cursor-pointer" style={{ fontSize: "14px", color: "var(--t3)", background: "none", border: "none" }}>Sign out</button>
+            <>
+              <Link
+                href="/profile"
+                onClick={() => setIsOpen(false)}
+                className="no-underline"
+                style={{ fontSize: "14px", color: "var(--t1)" }}
+              >
+                Profile
+              </Link>
+              <button
+                onClick={() => {
+                  signOut();
+                  setIsOpen(false);
+                }}
+                className="cursor-pointer"
+                style={{
+                  fontSize: "14px",
+                  color: "var(--t3)",
+                  background: "none",
+                  border: "none",
+                }}
+              >
+                Sign out
+              </button>
+            </>
           )}
         </div>
       )}

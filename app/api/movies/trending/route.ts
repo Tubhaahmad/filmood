@@ -20,11 +20,19 @@ export async function GET() {
 
     const films = (data.results ?? [])
       .slice(0, 4)
-      .map((f: { id: number; title: string; genre_ids: number[] }) => ({
-        id: f.id,
-        title: f.title,
-        genre_ids: f.genre_ids,
-      }));
+      .map(
+        (f: {
+          id: number;
+          title: string;
+          genre_ids: number[];
+          backdrop_path: string | null;
+        }) => ({
+          id: f.id,
+          title: f.title,
+          genre_ids: f.genre_ids,
+          backdrop_path: f.backdrop_path,
+        }),
+      );
 
     return NextResponse.json({ films });
   } catch {

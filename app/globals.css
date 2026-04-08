@@ -239,6 +239,175 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
+   Filmood Logo — Animated SVG
+   ═══════════════════════════════════════════════════════════ */
+
+svg.logo-drift,
+svg.logo-drift-fast,
+svg.logo-nav,
+svg.logo-static { overflow: visible; }
+
+/* ── Entrance: 3s full (hero/splash) ── */
+@keyframes entryOrbit-c1 {
+  0%   { transform: rotate(0deg) translateX(22px) rotate(0deg); opacity: 0; }
+  15%  { opacity: 0.5; }
+  50%  { transform: rotate(180deg) translateX(22px) rotate(-180deg); opacity: 0.7; }
+  75%  { transform: rotate(360deg) translateX(0px) rotate(-360deg); opacity: 1; }
+  100% { transform: rotate(360deg) translateX(0px) rotate(-360deg); opacity: 1; }
+}
+@keyframes entryOrbit-c2 {
+  0%   { transform: rotate(120deg) translateX(22px) rotate(-120deg); opacity: 0; }
+  15%  { opacity: 0.4; }
+  50%  { transform: rotate(300deg) translateX(22px) rotate(-300deg); opacity: 0.7; }
+  75%  { transform: rotate(480deg) translateX(0px) rotate(-480deg); opacity: 1; }
+  100% { transform: rotate(480deg) translateX(0px) rotate(-480deg); opacity: 1; }
+}
+@keyframes entryOrbit-c3 {
+  0%   { transform: rotate(240deg) translateX(22px) rotate(-240deg); opacity: 0; }
+  15%  { opacity: 0.3; }
+  50%  { transform: rotate(420deg) translateX(22px) rotate(-420deg); opacity: 0.7; }
+  75%  { transform: rotate(600deg) translateX(0px) rotate(-600deg); opacity: 1; }
+  100% { transform: rotate(600deg) translateX(0px) rotate(-600deg); opacity: 1; }
+}
+@keyframes entryPlay {
+  0%, 75%  { transform: scale(0); opacity: 0; }
+  90%      { transform: scale(1.15); opacity: 1; }
+  100%     { transform: scale(1); opacity: 1; }
+}
+
+/* ── Entrance: 1.5s fast (nav/repeat) ── */
+@keyframes entryFast-c1 {
+  0%   { transform: rotate(0deg) translateX(18px) rotate(0deg); opacity: 0; }
+  50%  { transform: rotate(180deg) translateX(18px) rotate(-180deg); opacity: 0.7; }
+  80%  { transform: rotate(360deg) translateX(0px) rotate(-360deg); opacity: 1; }
+  100% { transform: rotate(360deg) translateX(0px) rotate(-360deg); opacity: 1; }
+}
+@keyframes entryFast-c2 {
+  0%   { transform: rotate(120deg) translateX(18px) rotate(-120deg); opacity: 0; }
+  50%  { transform: rotate(300deg) translateX(18px) rotate(-300deg); opacity: 0.7; }
+  80%  { transform: rotate(480deg) translateX(0px) rotate(-480deg); opacity: 1; }
+  100% { transform: rotate(480deg) translateX(0px) rotate(-480deg); opacity: 1; }
+}
+@keyframes entryFast-c3 {
+  0%   { transform: rotate(240deg) translateX(18px) rotate(-240deg); opacity: 0; }
+  50%  { transform: rotate(420deg) translateX(18px) rotate(-420deg); opacity: 0.7; }
+  80%  { transform: rotate(600deg) translateX(0px) rotate(-600deg); opacity: 1; }
+  100% { transform: rotate(600deg) translateX(0px) rotate(-600deg); opacity: 1; }
+}
+@keyframes entryPlayFast {
+  0%, 70%  { transform: scale(0); opacity: 0; }
+  88%      { transform: scale(1.12); opacity: 1; }
+  100%     { transform: scale(1); opacity: 1; }
+}
+
+/* ── Drift: continuous floating after entrance ── */
+@keyframes driftC1 {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-1.5px, -2px); }
+  50%      { transform: translate(1px, -1px); }
+  75%      { transform: translate(2px, 1.5px); }
+}
+@keyframes driftC2 {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(2px, 1px); }
+  50%      { transform: translate(-1px, 2px); }
+  75%      { transform: translate(-2px, -1px); }
+}
+@keyframes driftC3 {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(1px, 2px); }
+  50%      { transform: translate(-2px, -0.5px); }
+  75%      { transform: translate(1.5px, -1.5px); }
+}
+
+/* Full entrance (3s) + drift */
+.logo-drift .c1 { transform-origin: center; animation: entryOrbit-c1 3s ease-in-out both, driftC1 6s ease-in-out 3s infinite; }
+.logo-drift .c2 { transform-origin: center; animation: entryOrbit-c2 3s ease-in-out both, driftC2 7s ease-in-out 3s infinite; }
+.logo-drift .c3 { transform-origin: center; animation: entryOrbit-c3 3s ease-in-out both, driftC3 8s ease-in-out 3s infinite; }
+.logo-drift .play { transform-origin: center; animation: entryPlay 3s ease-out both; }
+
+/* Fast entrance (1.5s) + drift */
+.logo-drift-fast .c1 { transform-origin: center; animation: entryFast-c1 1.5s ease-in-out both, driftC1 6s ease-in-out 1.5s infinite; }
+.logo-drift-fast .c2 { transform-origin: center; animation: entryFast-c2 1.5s ease-in-out both, driftC2 7s ease-in-out 1.5s infinite; }
+.logo-drift-fast .c3 { transform-origin: center; animation: entryFast-c3 1.5s ease-in-out both, driftC3 8s ease-in-out 1.5s infinite; }
+.logo-drift-fast .play { transform-origin: center; animation: entryPlayFast 1.5s ease-out both; }
+
+/* ── Hero section ── */
+
+/* Ambient orb drift — slow, organic floating */
+@keyframes heroOrbDrift1 {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  33%      { transform: translateX(calc(-50% + 20px)) translateY(-15px) scale(1.08); }
+  66%      { transform: translateX(calc(-50% - 15px)) translateY(10px) scale(0.95); }
+}
+@keyframes heroOrbDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%      { transform: translate(25px, 15px) scale(1.05); }
+  70%      { transform: translate(-10px, -20px) scale(0.97); }
+}
+@keyframes heroOrbDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  35%      { transform: translate(-20px, 10px) scale(1.06); }
+  65%      { transform: translate(15px, -15px) scale(0.94); }
+}
+
+@keyframes heroChevron {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50%      { transform: translateY(4px); opacity: 1; }
+}
+
+/* Grain overlay for hero — reuses lobby grain texture */
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px;
+  animation: grainShift 8s steps(6) infinite;
+}
+
+[data-theme="light"] .hero-grain { opacity: 0.025; }
+
+/* Light theme — increase orb visibility since bg is lighter */
+[data-theme="light"] .hero-orb { opacity: 0.5 !important; }
+
+/* Staggered entrance for hero content */
+.hero-content > *:nth-child(1) { animation: fadeUp 0.8s ease both; animation-delay: 0.2s; }
+.hero-content > *:nth-child(2) { animation: fadeUp 0.8s ease both; animation-delay: 2.8s; }
+.hero-content > *:nth-child(3) { animation: fadeUp 0.8s ease both; animation-delay: 3.2s; }
+
+.hero-scroll-hint { animation: fadeUp 0.6s ease both; animation-delay: 3.6s; }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .logo-drift .c1,
+  .logo-drift .c2,
+  .logo-drift .c3,
+  .logo-drift .play,
+  .logo-drift-fast .c1,
+  .logo-drift-fast .c2,
+  .logo-drift-fast .c3,
+  .logo-drift-fast .play {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .hero-content > *,
+  .hero-scroll-hint,
+  .hero-orb {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .hero-grain {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
    Lobby — Cinematic Lounge
    ═══════════════════════════════════════════════════════════ */
 
@@ -310,4 +479,31 @@
   .lobby-steps {
     flex-direction: column;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Swipe — Responsive overrides
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hide keyboard hints and group dots on mobile */
+@media (max-width: 600px) {
+  .swipe-group-dots { display: none !important; }
+  .swipe-key-hints { display: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Dashboard — Panel button hover effects
+   ═══════════════════════════════════════════════════════════ */
+.btn-panel-outline:hover {
+  border-color: var(--border-active) !important;
+  color: var(--t1) !important;
+  background: var(--surface2) !important;
+  transform: translateY(-1px);
+}
+
+.btn-panel-refine:hover {
+  border-color: var(--border-active) !important;
+  color: var(--t1) !important;
+  background: var(--surface3) !important;
+  transform: translateY(-1px);
 }
