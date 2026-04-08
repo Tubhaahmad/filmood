@@ -3,7 +3,7 @@ import "./globals.css";
 import Navbar from "../components/Navbar";
 import AuthProvider from "../components/AuthProvider";
 import { Lora, Plus_Jakarta_Sans } from "next/font/google";
-import GuestBanner from "@/components/dashboard/GuestBanner";
+import StickyHeader from "@/components/dashboard/StickyHeader";
 
 const lora = Lora({
   subsets: ["latin"],
@@ -45,8 +45,8 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AuthProvider>
-          <GuestBanner />
-          <Navbar />
+          <StickyHeader />
+
           {children}
         </AuthProvider>
       </body>
