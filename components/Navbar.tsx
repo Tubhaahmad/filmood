@@ -25,7 +25,11 @@ function subscribeToTheme(callback: () => void) {
 }
 
 function useTheme() {
-  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerSnapshot);
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerSnapshot,
+  );
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
@@ -42,7 +46,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="sticky top-0 z-50 flex items-center justify-between"
+      className="flex items-center justify-between"
       style={{
         padding: "14px 28px",
         borderBottom: "1px solid var(--border)",
@@ -175,7 +179,11 @@ export default function Navbar() {
       {isOpen && (
         <div
           className="absolute left-0 right-0 top-full flex flex-col items-end gap-4 md:hidden"
-          style={{ padding: "20px 28px", background: "var(--bg)", borderBottom: "1px solid var(--border)" }}
+          style={{
+            padding: "20px 28px",
+            background: "var(--bg)",
+            borderBottom: "1px solid var(--border)",
+          }}
         >
           <button
             onClick={toggleTheme}

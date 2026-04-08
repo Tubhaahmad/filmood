@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "../components/Navbar";
 import AuthProvider from "../components/AuthProvider";
 import { Lora, Plus_Jakarta_Sans } from "next/font/google";
+import StickyHeader from "@/components/dashboard/StickyHeader";
 
 const lora = Lora({
   subsets: ["latin"],
@@ -28,7 +29,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning className={`${lora.variable} ${jakarta.variable}`}>
+    <html
+      lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${lora.variable} ${jakarta.variable}`}
+    >
       <head>
         {/* Apply saved theme before paint to prevent flash */}
         <script
@@ -39,7 +45,8 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <AuthProvider>
-          <Navbar />
+          <StickyHeader />
+
           {children}
         </AuthProvider>
       </body>
