@@ -29,6 +29,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Optional refinement params
+  const runtime = searchParams.get("runtime");   // "short" | "long"
+  const language = searchParams.get("language");  // "en" | "scand"
+  const exclude = searchParams.get("exclude");    // comma-separated genre IDs
+
   try {
     // Fetch results for each mood in parallel
     const fetches = moodKeys.map(async (key) => {
@@ -42,7 +47,27 @@ export async function GET(request: NextRequest) {
         url.searchParams.set(k, v);
       }
 
+      // Apply refinements
+      if (runtime === "short") {
+        url.searchParams.set("with_runtime.lte", "100");
+      } else if (runtime === "long") {
+        url.searchParams.set("with_runtime.gte", "150");
+      }
+
+      if (language === "en") {
+        url.searchParams.set("with_original_language", "en");
+      } else if (language === "scand") {
+        url.searchParams.set("with_original_language", "en|no|sv|da|fi|is");
+      }
+
+      if (exclude) {
+        const existing = url.searchParams.get("without_genres");
+        const merged = existing ? `${existing},${exclude}` : exclude;
+        url.searchParams.set("without_genres", merged);
+      }
+
       const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`TMDB error: ${res.status}`);
       const data = await res.json();
       return data.results ?? [];
     });

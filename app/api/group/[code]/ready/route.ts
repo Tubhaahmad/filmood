@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
+import { resolveSession, resolveParticipant } from "@/lib/group-api";
 
 // POST /api/group/[code]/ready
 // Toggles the is_ready flag for the calling participant.
@@ -19,30 +20,13 @@ export async function POST(
     // No body is fine for authenticated users
   }
 
-  if (!user && !participantId) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
-
   try {
     const supabase = getSupabaseAdmin();
-    const upperCode = code.toUpperCase();
 
-    // Find the session
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, status")
-      .eq("code", upperCode)
-      .single();
-
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; status: string; created_at: string;
+    }>(supabase, code);
+    if (sessionErr) return sessionErr;
 
     if (session.status !== "lobby") {
       return NextResponse.json(
@@ -51,27 +35,10 @@ export async function POST(
       );
     }
 
-    // Find the participant
-    let query = supabase
-      .from("session_participants")
-      .select("id, is_ready")
-      .eq("session_id", session.id);
-
-    if (user) {
-      query = query.eq("user_id", user.id);
-    } else {
-      query = query.eq("id", participantId!);
-    }
-
-    const { data: participant, error: participantError } =
-      await query.single();
-
-    if (participantError || !participant) {
-      return NextResponse.json(
-        { error: "You are not in this session" },
-        { status: 404 },
-      );
-    }
+    const { participant, error: partErr } = await resolveParticipant<{
+      id: string; is_ready: boolean;
+    }>(supabase, session.id, user, participantId, "id, is_ready");
+    if (partErr) return partErr;
 
     // Toggle the ready state
     const newReady = !participant.is_ready;

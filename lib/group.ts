@@ -45,4 +45,18 @@ function isSessionExpired(createdAt: string): boolean {
   return now - created > SESSION_EXPIRY_HOURS * 60 * 60 * 1000;
 }
 
-export { MAX_PARTICIPANTS, SESSION_EXPIRY_HOURS, isSessionExpired };
+/** Classify a film into a tier based on vote breakdown */
+function classifyTier(
+  yesCount: number,
+  noCount: number,
+  participantCount: number,
+): "perfect" | "strong" | "miss" {
+  if (participantCount === 0) return "miss";
+  if (yesCount === participantCount) return "perfect";
+  if (noCount === 0 && yesCount >= Math.ceil(participantCount / 2)) {
+    return "strong";
+  }
+  return "miss";
+}
+
+export { MAX_PARTICIPANTS, SESSION_EXPIRY_HOURS, isSessionExpired, classifyTier };

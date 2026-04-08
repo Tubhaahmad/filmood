@@ -1,15 +1,132 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import type { Film } from "@/lib/types";
 
 const BROWSE_CATEGORIES = [
-  { id: "trending", label: "Trending" },
-  { id: "top-rated", label: "Top Rated" },
-  { id: "new-releases", label: "New Releases" },
-  { id: "in-cinemas", label: "In Cinemas" },
-  { id: "by-genre", label: "By Genre" },
-  { id: "streaming-norway", label: "Streaming in Norway" },
+  {
+    id: "trending",
+    label: "Trending",
+    icon: (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
+  },
+  {
+    id: "top-rated",
+    label: "Top Rated",
+    icon: (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    ),
+  },
+  {
+    id: "new-releases",
+    label: "New Releases",
+    icon: (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    ),
+  },
+  {
+    id: "in-cinemas",
+    label: "In Cinemas",
+    icon: (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+        <line x1="7" y1="2" x2="7" y2="22" />
+        <line x1="17" y1="2" x2="17" y2="22" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <line x1="2" y1="7" x2="7" y2="7" />
+        <line x1="2" y1="17" x2="7" y2="17" />
+        <line x1="17" y1="17" x2="22" y2="17" />
+        <line x1="17" y1="7" x2="22" y2="7" />
+      </svg>
+    ),
+  },
+  {
+    id: "by-genre",
+    label: "By Genre",
+    icon: (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
+    ),
+  },
+  {
+    id: "streaming-norway",
+    label: "Streaming in Norway",
+    icon: (
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polygon points="10 8 16 12 10 16 10 8" />
+      </svg>
+    ),
+  },
 ] as const;
 
 type BrowseCategory = (typeof BROWSE_CATEGORIES)[number]["id"];
@@ -56,13 +173,17 @@ interface TrendingItem {
 }
 
 interface SearchBoxProps {
-  onResults?: (films: Film[]) => void;
+  onResults?: (films: Film[], keepOpen?: boolean) => void;
+  onLabel?: (label: string) => void;
+  onActiveCategory?: (category: string | null, genreId?: number | null) => void;
   onExpand?: () => void;
   isExpanded?: boolean;
 }
 
 export default function SearchBox({
   onResults,
+  onLabel,
+  onActiveCategory,
   onExpand,
   isExpanded,
 }: SearchBoxProps) {
@@ -73,7 +194,14 @@ export default function SearchBox({
   );
   const [activeGenre, setActiveGenre] = useState<number | null>(null);
   const [trending, setTrending] = useState<TrendingItem[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Sync active category/genre up to parent so the panel tabs stay in sync
+  useEffect(() => {
+    onActiveCategory?.(activeCategory, activeGenre);
+  }, [activeCategory, activeGenre]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch trending movies on mount
   useEffect(() => {
@@ -89,22 +217,30 @@ export default function SearchBox({
         onResults?.([]);
         return;
       }
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
       setIsLoading(true);
       setActiveCategory(null);
       try {
         const res = await fetch(
           `/api/movies/search?query=${encodeURIComponent(q.trim())}&type=all`,
+          { signal: controller.signal },
         );
         const data = await res.json();
-        onResults?.(data.films ?? []);
+        const films = data.films ?? [];
+        onResults?.(films);
+        onLabel?.(
+          `Search results — ${films.length} film${films.length !== 1 ? "s" : ""}`,
+        );
         onExpand?.();
-      } catch {
-        onResults?.([]);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") onResults?.([]);
       } finally {
         setIsLoading(false);
       }
     },
-    [onResults, onExpand],
+    [onResults, onLabel, onExpand],
   );
 
   const doBrowse = useCallback(
@@ -115,15 +251,25 @@ export default function SearchBox({
         if (genreId) params.set("genre", String(genreId));
         const res = await fetch(`/api/movies/browse?${params.toString()}`);
         const data = await res.json();
-        onResults?.(data.films ?? []);
-        onExpand?.();
+        const films = data.films ?? [];
+        onResults?.(films, true);
+        const catLabel =
+          BROWSE_CATEGORIES.find((c) => c.id === category)?.label ?? category;
+        const genreLabel = genreId
+          ? GENRES.find((g) => g.id === genreId)?.label
+          : undefined;
+        onLabel?.(
+          genreLabel
+            ? `${catLabel} — ${genreLabel} — ${films.length} film${films.length !== 1 ? "s" : ""}`
+            : `${catLabel} — ${films.length} film${films.length !== 1 ? "s" : ""}`,
+        );
       } catch {
         onResults?.([]);
       } finally {
         setIsLoading(false);
       }
     },
-    [onResults, onExpand],
+    [onResults, onLabel],
   );
 
   // Debounced search on typing
@@ -148,6 +294,7 @@ export default function SearchBox({
       } else {
         setActiveCategory("by-genre");
         setQuery("");
+        onExpand?.();
       }
       return;
     }
@@ -158,25 +305,37 @@ export default function SearchBox({
     }
     setActiveCategory(categoryId);
     setQuery("");
+    onExpand?.();
     doBrowse(categoryId);
   };
 
   const handleGenreClick = (genreId: number) => {
     setActiveGenre(genreId);
+    onExpand?.();
     doBrowse("by-genre", genreId);
+  };
+
+  // When panel opens and nothing is active, load trending into the panel
+  const handleSectionClick = () => {
+    onExpand?.();
+    if (!query && !activeCategory) {
+      doBrowse("trending");
+    }
   };
 
   return (
     <section
-      onClick={onExpand}
+      onClick={handleSectionClick}
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
-        border: `1px solid ${isExpanded ? "var(--border-active)" : "var(--border)"}`,
+        border: `1px solid ${isExpanded ? "var(--blue)" : "var(--border)"}`,
         borderRadius: "16px",
         padding: "22px",
         transition: "border-color 0.3s, box-shadow 0.3s",
-        boxShadow: isExpanded ? "0 0 0 1px var(--border-active)" : "none",
+        boxShadow: isExpanded
+          ? "0 0 0 1px var(--blue), 0 0 16px var(--blue-glow)"
+          : "none",
         minHeight: "100%",
       }}
     >
@@ -186,7 +345,7 @@ export default function SearchBox({
           fontWeight: 600,
           textTransform: "uppercase",
           letterSpacing: "1.8px",
-          color: "#527bc7",
+          color: "var(--blue)",
           marginBottom: "12px",
         }}
       >
@@ -233,20 +392,30 @@ export default function SearchBox({
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
+          id="search-box-input"
+          name="search-box-input"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => {
+            setInputFocused(true);
+            if (!query && !activeCategory) doBrowse("trending");
+            onExpand?.();
+          }}
+          onBlur={() => setInputFocused(false)}
           placeholder="Film, actor, director..."
           aria-label="Search films, actors, or directors"
           style={{
             width: "100%",
             borderRadius: "12px",
             background: "var(--surface2)",
-            border: "1px solid var(--border)",
+            border: `1px solid ${inputFocused ? "var(--blue)" : "var(--border)"}`,
+            boxShadow: inputFocused ? "0 0 0 3px var(--blue-soft)" : "none",
             color: "var(--t1)",
             padding: "11px 14px 11px 40px",
             fontSize: "14px",
             outline: "none",
+            transition: "border-color 0.2s, box-shadow 0.2s",
           }}
         />
         {isLoading && (
@@ -266,7 +435,11 @@ export default function SearchBox({
             onClick={() => handleCategoryClick(cat.id)}
             style={{
               borderRadius: "999px",
-              border: `1px solid ${activeCategory === cat.id ? "var(--border-active)" : "var(--border)"}`,
+              border: `1px solid ${
+                activeCategory === cat.id
+                  ? "var(--border-active)"
+                  : "var(--border)"
+              }`,
               background:
                 activeCategory === cat.id ? "var(--surface2)" : "var(--bg)",
               color: activeCategory === cat.id ? "var(--t1)" : "var(--t2)",
@@ -275,8 +448,12 @@ export default function SearchBox({
               padding: "8px 11px",
               cursor: "pointer",
               transition: "all 0.2s",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
             }}
           >
+            {cat.icon}
             {cat.label}
           </button>
         ))}
@@ -328,17 +505,33 @@ export default function SearchBox({
             Trending Today
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col">
             {trending.map((item, i) => (
-              <div
+              <Link
                 key={item.id}
-                className="grid grid-cols-[auto_1fr_auto] items-center gap-2.5"
+                href={`/film/${item.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="group grid grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-lg"
+                style={{
+                  padding: "7px 8px",
+                  margin: "0 -8px",
+                  textDecoration: "none",
+                  transition: "background 0.18s",
+                  animationDelay: `${i * 60}ms`,
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "var(--surface2)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
               >
                 <span
                   style={{
                     color: "var(--t3)",
                     fontSize: "12px",
                     fontVariantNumeric: "tabular-nums",
+                    minWidth: "20px",
                   }}
                 >
                   {String(i + 1).padStart(2, "0")}
@@ -348,17 +541,25 @@ export default function SearchBox({
                     color: "var(--t1)",
                     fontSize: "14px",
                     fontWeight: 500,
+                    transition: "color 0.18s",
                   }}
+                  className="group-hover:text-white"
                 >
                   {item.title}
                 </span>
                 <span style={{ color: "var(--t3)", fontSize: "12px" }}>
                   {GENRE_MAP[item.genre_ids?.[0]] ?? "Film"}
                 </span>
-              </div>
+              </Link>
             ))}
             {trending.length === 0 && (
-              <span style={{ color: "var(--t3)", fontSize: "12px" }}>
+              <span
+                style={{
+                  color: "var(--t3)",
+                  fontSize: "12px",
+                  padding: "4px 8px",
+                }}
+              >
                 Loading...
               </span>
             )}

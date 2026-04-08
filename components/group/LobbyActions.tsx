@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 
 interface LobbyActionsProps {
   isHost: boolean;
@@ -8,7 +9,6 @@ interface LobbyActionsProps {
   allReady: boolean;
   selfReady: boolean;
   sessionCode: string;
-  accessToken: string | undefined;
   participantId: string | null;
   onSessionStarted: () => void;
   onReadyToggled: () => void;
@@ -22,7 +22,6 @@ export default function LobbyActions({
   allReady,
   selfReady,
   sessionCode,
-  accessToken,
   participantId,
   onSessionStarted,
   onReadyToggled,
@@ -44,7 +43,7 @@ export default function LobbyActions({
     try {
       const res = await fetch(`/api/group/${sessionCode}/start`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: await getAuthHeaders(),
       });
 
       const data = await res.json();
@@ -66,25 +65,27 @@ export default function LobbyActions({
     setTogglingReady(true);
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-      }
+      const headers = await getAuthHeaders();
+      const isGuest = !headers.Authorization;
 
-      const body = !accessToken && participantId
+      const body = isGuest && participantId
         ? { participantId }
         : {};
 
-      await fetch(`/api/group/${sessionCode}/ready`, {
+      const res = await fetch(`/api/group/${sessionCode}/ready`, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
       });
 
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Failed to toggle ready state");
+      }
+
       onReadyToggled();
     } catch {
+      setError("Network error — please try again");
       onReadyToggled();
     } finally {
       setTogglingReady(false);
@@ -96,14 +97,10 @@ export default function LobbyActions({
     setLeaving(true);
 
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (accessToken) {
-        headers.Authorization = `Bearer ${accessToken}`;
-      }
+      const headers = await getAuthHeaders();
+      const isGuest = !headers.Authorization;
 
-      const body = !accessToken && participantId
+      const body = isGuest && participantId
         ? JSON.stringify({ participantId })
         : undefined;
 

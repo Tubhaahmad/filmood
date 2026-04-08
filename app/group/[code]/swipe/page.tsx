@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { useParticipantId } from "@/lib/useParticipantId";
+import { useGroupRealtime } from "@/lib/useGroupRealtime";
+import { getAuthHeaders } from "@/lib/getAuthToken";
 import SwipeDeck from "@/components/group/SwipeDeck";
 import type { DeckFilm, SwipeVote } from "@/lib/types";
-
-const AVATAR_COLORS = [
-  { bg: "var(--gold)", text: "#0a0a0c" },
-  { bg: "var(--teal)", text: "#0a0a0c" },
-  { bg: "var(--rose)", text: "#fff" },
-  { bg: "var(--blue)", text: "#fff" },
-  { bg: "var(--violet)", text: "#fff" },
-];
+import { AVATAR_COLORS } from "@/lib/constants";
 
 interface ParticipantStatus {
   id: string;
+  user_id: string | null;
   nickname: string;
   has_swiped: boolean;
 }
@@ -25,7 +21,7 @@ export default function GroupSwipePage() {
   const params = useParams<{ code: string }>();
   const code = params.code;
   const router = useRouter();
-  const { user, session: authSession, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [deck, setDeck] = useState<DeckFilm[]>([]);
   const [startIndex, setStartIndex] = useState(0);
@@ -38,36 +34,23 @@ export default function GroupSwipePage() {
   const [error, setError] = useState<string | null>(null);
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [participantId, setParticipantId] = useState<string | null>(null);
-  const fetchRef = useRef<() => Promise<void>>(undefined);
+  const { participantId, ready: participantIdReady } = useParticipantId();
   const redirectingRef = useRef(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("participantId");
-    if (stored) setParticipantId(stored);
-  }, []);
-
-  const getHeaders = useCallback(() => {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-    if (authSession?.access_token) {
-      headers.Authorization = `Bearer ${authSession.access_token}`;
-    }
-    return headers;
-  }, [authSession]);
 
   const fetchSwipeState = useCallback(async () => {
     if (redirectingRef.current) return;
+    setError(null);
 
     try {
+      const headers = await getAuthHeaders();
+      const isGuest = !headers.Authorization;
       const pidParam =
-        !authSession?.access_token && participantId
+        isGuest && participantId
           ? `?participantId=${participantId}`
           : "";
 
       const res = await fetch(`/api/group/${code}/swipe${pidParam}`, {
-        headers: getHeaders(),
+        headers,
       });
 
       if (!res.ok) {
@@ -97,28 +80,26 @@ export default function GroupSwipePage() {
 
       const data = await res.json();
 
-      if (data.deck?.length > 0 && !sessionId) {
-        const lobbyRes = await fetch(`/api/group/${code}`);
-        const lobbyData = await lobbyRes.json();
-        if (lobbyData.session?.id) {
-          setSessionId(lobbyData.session.id);
-        }
+      if (data.sessionId && !sessionId) {
+        setSessionId(data.sessionId);
       }
 
       setDeck(data.deck);
       setParticipants(data.participants);
       setSessionStatus(data.sessionStatus);
 
-      const voteMap: Record<string, SwipeVote> = {};
-      for (const s of data.swipes) {
-        voteMap[String(s.movie_id)] = s.vote;
-      }
-      setMyVotes(voteMap);
-      setStartIndex(data.progress.swiped);
+      setMyVotes((prev) => {
+        const merged = { ...prev };
+        for (const s of data.swipes) {
+          merged[String(s.movie_id)] = s.vote;
+        }
+        return merged;
+      });
+      setStartIndex((prev) => Math.max(prev, data.progress.swiped));
 
       const currentPid = participantId;
       const me = data.participants.find((p: ParticipantStatus) => {
-        if (user) return true;
+        if (user) return p.user_id === user.id;
         return p.id === currentPid;
       });
       if (me?.has_swiped || data.progress.swiped >= data.progress.total) {
@@ -139,100 +120,96 @@ export default function GroupSwipePage() {
     } finally {
       setLoading(false);
     }
-  }, [code, router, user, participantId, authSession, sessionId, getHeaders]);
-
-  fetchRef.current = fetchSwipeState;
+  }, [code, router, user, participantId, sessionId]);
 
   useEffect(() => {
-    if (!authLoading) fetchSwipeState();
-  }, [authLoading, fetchSwipeState]);
+    if (!authLoading && participantIdReady) fetchSwipeState();
+  }, [authLoading, participantIdReady, fetchSwipeState]);
 
+  // Detect local completion — all cards in the deck have a vote
   useEffect(() => {
-    if (loading) return;
-    const interval = setInterval(() => {
-      fetchRef.current?.();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [loading]);
+    if (deck.length > 0 && Object.keys(myVotes).length >= deck.length) {
+      setIsDone(true);
+    }
+  }, [myVotes, deck.length]);
 
-  useEffect(() => {
-    if (!sessionId) return;
+  // Realtime + polling
+  useGroupRealtime({
+    sessionId,
+    channelPrefix: "swipe",
+    onUpdate: fetchSwipeState,
+    paused: loading,
+  });
 
-    const participantsChannel = supabase
-      .channel(`swipe-participants-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "session_participants",
-          filter: `session_id=eq.${sessionId}`,
-        },
-        () => { fetchRef.current?.(); },
-      )
-      .subscribe();
+  const sendVote = useCallback(
+    async (movieId: number, vote: SwipeVote) => {
+      const headers = await getAuthHeaders();
+      const isGuest = !headers.Authorization;
 
-    const sessionChannel = supabase
-      .channel(`swipe-session-${sessionId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "sessions",
-          filter: `id=eq.${sessionId}`,
-        },
-        () => { fetchRef.current?.(); },
-      )
-      .subscribe();
+      const body: { movieId: number; vote: SwipeVote; participantId?: string } = {
+        movieId,
+        vote,
+      };
+      if (isGuest && participantId) {
+        body.participantId = participantId;
+      }
 
-    return () => {
-      supabase.removeChannel(participantsChannel);
-      supabase.removeChannel(sessionChannel);
-    };
-  }, [sessionId]);
+      const res = await fetch(`/api/group/${code}/swipe`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      return res;
+    },
+    [code, participantId],
+  );
 
   const handleVote = useCallback(
     async (movieId: number, vote: SwipeVote) => {
+      // Optimistic — the card is already gone from SwipeDeck, so we never
+      // roll this back. If the POST fails we retry once; the polling will
+      // eventually sync the server state regardless.
       setMyVotes((prev) => ({ ...prev, [String(movieId)]: vote }));
 
       try {
-        const body: { movieId: number; vote: SwipeVote; participantId?: string } = {
-          movieId,
-          vote,
-        };
-        if (!authSession?.access_token && participantId) {
-          body.participantId = participantId;
-        }
+        const res = await sendVote(movieId, vote);
 
-        const res = await fetch(`/api/group/${code}/swipe`, {
-          method: "POST",
-          headers: getHeaders(),
-          body: JSON.stringify(body),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          setMyVotes((prev) => {
-            const next = { ...prev };
-            delete next[String(movieId)];
-            return next;
-          });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.participantDone) setIsDone(true);
+          if (data.allDone) setAllDone(true);
           return;
         }
 
-        if (data.participantDone) setIsDone(true);
-        if (data.allDone) setAllDone(true);
+        // 409 = already recorded, nothing to retry
+        if (res.status === 409) return;
+
+        // Other server error — retry once after a short delay
+        await new Promise((r) => setTimeout(r, 800));
+        const retry = await sendVote(movieId, vote);
+        if (retry.ok) {
+          const data = await retry.json();
+          if (data.participantDone) setIsDone(true);
+          if (data.allDone) setAllDone(true);
+        }
       } catch {
-        setMyVotes((prev) => {
-          const next = { ...prev };
-          delete next[String(movieId)];
-          return next;
-        });
+        // Network error — retry once
+        try {
+          await new Promise((r) => setTimeout(r, 800));
+          const retry = await sendVote(movieId, vote);
+          if (retry.ok) {
+            const data = await retry.json();
+            if (data.participantDone) setIsDone(true);
+            if (data.allDone) setAllDone(true);
+          }
+        } catch {
+          // Both attempts failed — the optimistic vote stays in myVotes
+          // so the done screen still shows. Polling will sync server state.
+        }
       }
     },
-    [code, authSession, participantId, getHeaders],
+    [sendVote],
   );
 
   const voteCounts = Object.values(myVotes).reduce(
@@ -591,7 +568,7 @@ export default function GroupSwipePage() {
             ) : (
               <button
                 className="font-sans cursor-pointer"
-                onClick={() => router.push(`/group/${code}/results`)}
+                onClick={() => router.replace(`/group/${code}/results`)}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",

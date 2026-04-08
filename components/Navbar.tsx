@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { useAuth } from "./AuthProvider";
+import FilmoodLogo from "./dashboard/FilmoodLogo";
 
 function getThemeSnapshot(): "dark" | "light" {
   return document.documentElement.getAttribute("data-theme") === "light"
@@ -24,7 +25,11 @@ function subscribeToTheme(callback: () => void) {
 }
 
 function useTheme() {
-  const theme = useSyncExternalStore(subscribeToTheme, getThemeSnapshot, getServerSnapshot);
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerSnapshot,
+  );
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
@@ -41,7 +46,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className="sticky top-0 z-50 flex items-center justify-between"
+      className="flex items-center justify-between"
       style={{
         padding: "14px 28px",
         borderBottom: "1px solid var(--border)",
@@ -50,14 +55,16 @@ export default function Navbar() {
     >
       <Link
         href="/"
-        className="font-serif no-underline"
+        className="font-serif no-underline flex items-center"
         style={{
+          gap: "8px",
           fontSize: "22px",
           fontWeight: 600,
           color: "var(--t1)",
           letterSpacing: "-0.3px",
         }}
       >
+        <FilmoodLogo variant="nav" size={28} />
         Filmood
       </Link>
 
@@ -172,7 +179,11 @@ export default function Navbar() {
       {isOpen && (
         <div
           className="absolute left-0 right-0 top-full flex flex-col items-end gap-4 md:hidden"
-          style={{ padding: "20px 28px", background: "var(--bg)", borderBottom: "1px solid var(--border)" }}
+          style={{
+            padding: "20px 28px",
+            background: "var(--bg)",
+            borderBottom: "1px solid var(--border)",
+          }}
         >
           <button
             onClick={toggleTheme}

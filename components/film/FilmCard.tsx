@@ -71,8 +71,8 @@ export default function FilmCard({
         }}
       >
         <div
-          className="relative aspect-[2/3]"
-          style={{ background: "var(--surface2)" }}
+          className="relative"
+          style={{ aspectRatio: "2/3", background: "var(--surface2)" }}
         >
           {posterPath ? (
             <Image
@@ -116,34 +116,39 @@ export default function FilmCard({
           </div>
         </div>
 
-        <div style={{ padding: "10px 12px 12px" }}>
+        <div style={{ padding: "10px 12px 12px", minHeight: "90px" }}>
           <h3
-            className="truncate"
             style={{
               fontSize: "13px",
               fontWeight: 600,
               color: "var(--t1)",
               margin: 0,
               marginBottom: "6px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {title}
           </h3>
 
-          <div className="flex items-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "11px", color: "var(--t3)" }}>{year}</span>
           </div>
 
           <p
-            className="line-clamp-2"
             style={{
               fontSize: "11px",
               color: "var(--t2)",
               marginTop: "6px",
               lineHeight: "1.5",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
-            {overview}
+            {overview || "\u00A0"}
           </p>
         </div>
       </div>

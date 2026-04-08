@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-server";
-import { isSessionExpired } from "@/lib/group";
+import { resolveSession } from "@/lib/group-api";
 
 // GET /api/group/[code]
 // Returns session details + participant list for the lobby.
@@ -11,37 +11,13 @@ export async function GET(
 ) {
   const { code } = await params;
 
-  if (!code || code.length !== 6) {
-    return NextResponse.json(
-      { error: "Invalid session code" },
-      { status: 400 },
-    );
-  }
-
   try {
     const supabase = getSupabaseAdmin();
-    const upperCode = code.toUpperCase();
 
-    // Fetch the session
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, code, host_id, status, created_at")
-      .eq("code", upperCode)
-      .single();
-
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
-
-    if (isSessionExpired(session.created_at)) {
-      return NextResponse.json(
-        { error: "Session expired" },
-        { status: 410 },
-      );
-    }
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; code: string; host_id: string; status: string; created_at: string;
+    }>(supabase, code, "id, code, host_id, status, created_at");
+    if (sessionErr) return sessionErr;
 
     // Fetch participants ordered by join time (host will be first)
     const { data: participants, error: participantsError } = await supabase

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin, getAuthUser } from "@/lib/supabase-server";
-import { isSessionExpired } from "@/lib/group";
+import { resolveSession } from "@/lib/group-api";
 
 // POST /api/group/[code]/start
 // Host transitions the session from "lobby" to "mood".
@@ -21,28 +21,11 @@ export async function POST(
 
   try {
     const supabase = getSupabaseAdmin();
-    const upperCode = code.toUpperCase();
 
-    // Fetch the session
-    const { data: session, error: sessionError } = await supabase
-      .from("sessions")
-      .select("id, host_id, status, created_at")
-      .eq("code", upperCode)
-      .single();
-
-    if (sessionError || !session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
-    }
-
-    if (isSessionExpired(session.created_at)) {
-      return NextResponse.json(
-        { error: "Session expired" },
-        { status: 410 },
-      );
-    }
+    const { session, error: sessionErr } = await resolveSession<{
+      id: string; host_id: string; status: string; created_at: string;
+    }>(supabase, code, "id, host_id, status, created_at");
+    if (sessionErr) return sessionErr;
 
     // Only the host can start
     if (session.host_id !== user.id) {
