@@ -81,6 +81,20 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [navHeight, setNavHeight] = useState(64);
+
+  useEffect(() => {
+    const updateNavHeight = () => {
+      const nav = document.querySelector("nav");
+      if (nav instanceof HTMLElement) {
+        setNavHeight(nav.offsetHeight);
+      }
+    };
+
+    updateNavHeight();
+    window.addEventListener("resize", updateNavHeight);
+    return () => window.removeEventListener("resize", updateNavHeight);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,8 +135,12 @@ export default function SignupPage() {
 
   return (
     <div
-      className="flex min-h-screen"
-      style={{ background: "var(--bg)", color: "var(--t1)" }}
+      className="flex h-dvh overflow-hidden"
+      style={{
+        background: "var(--bg)",
+        color: "var(--t1)",
+        height: `calc(100dvh - ${navHeight}px)`,
+      }}
     >
       {/* ── Left: cinematic panel ── */}
       <div className="hidden lg:flex flex-col justify-end flex-1 relative overflow-hidden p-12">
@@ -238,7 +256,7 @@ export default function SignupPage() {
       </div>
 
       {/* ── Right: form panel ── */}
-      <div className="flex flex-1 items-center justify-center px-5 py-12 lg:px-12">
+      <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 py-12 lg:px-12">
         <div className="w-full max-w-[400px]">
           {/* Header */}
           <div className="mb-7">
