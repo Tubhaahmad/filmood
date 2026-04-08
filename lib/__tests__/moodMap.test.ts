@@ -1,4 +1,4 @@
-import { buildTMDBParams, moodMap, allMoods } from "@/lib/moodMap";
+import { buildTMDBParams, allMoods } from "@/lib/moodMap";
 
 describe("buildTMDBParams", () => {
   it("returns correct params for 'laugh' mood", () => {
