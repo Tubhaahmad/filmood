@@ -40,6 +40,21 @@ All AI tool usage for this project is documented here as required by the course 
 | AI Tool | 11 Mar 2026 |Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 | | | | |
 
+## Log - Kacper
+
+| Tool | Date | Purpose | Outcome |
+|------|------|---------|---------|
+
+| AI Tool | 4 April 2026 | See overal project structer for a deeper understanding 
+
+| AI Tool | 6 April 2026 | Planing the best way to do redisign of the login page, check if any code is reusable from other pages such as "sign in" page | More clean redisgn.
+
+| AI Tool | 6 April 2026 | Fixing a bug with NEXTAUTH_SECRET generation, the "openssl rand -base64 32" gave me error's | Managed to generate my own "NEXTAUTH_SECRET" after bug fixxing |
+
+| AI Tool | 8 April 2026 | Resolving a overflow issue on login page | Perfect screen size fit for the login page for all screen sizes |
+
+---
+
 ## Reminders
 
 - **Allowed:** Brainstorming project structure or user flow, explaining complex JavaScript concepts, generating placeholder text, debugging assistance by describing errors
