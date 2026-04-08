@@ -122,6 +122,60 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
+   Search panel utilities
+   ═══════════════════════════════════════════════════════════ */
+@keyframes chipReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gridFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-genre-chip {
+  animation: chipReveal 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.search-skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 25%,
+    var(--surface3) 50%,
+    var(--surface2) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.search-grid-enter {
+  animation: gridFadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ═══════════════════════════════════════════════════════════
    Keyframes
    ═══════════════════════════════════════════════════════════ */
 @keyframes fadeUp {

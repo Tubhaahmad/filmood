@@ -196,6 +196,7 @@ export default function SearchBox({
   const [trending, setTrending] = useState<TrendingItem[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Sync active category/genre up to parent so the panel tabs stay in sync
   useEffect(() => {
@@ -216,11 +217,15 @@ export default function SearchBox({
         onResults?.([]);
         return;
       }
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
       setIsLoading(true);
       setActiveCategory(null);
       try {
         const res = await fetch(
           `/api/movies/search?query=${encodeURIComponent(q.trim())}&type=all`,
+          { signal: controller.signal },
         );
         const data = await res.json();
         const films = data.films ?? [];
@@ -229,8 +234,8 @@ export default function SearchBox({
           `Search results — ${films.length} film${films.length !== 1 ? "s" : ""}`,
         );
         onExpand?.();
-      } catch {
-        onResults?.([]);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") onResults?.([]);
       } finally {
         setIsLoading(false);
       }
@@ -387,6 +392,8 @@ export default function SearchBox({
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
+          id="search-box-input"
+          name="search-box-input"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

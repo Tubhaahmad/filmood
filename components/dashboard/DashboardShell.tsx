@@ -17,13 +17,18 @@ export default function DashboardShell() {
   const [searchResults, setSearchResults] = useState<Film[]>([]);
   const [panelCategory, setPanelCategory] = useState<string | null>(null);
   const [panelGenre, setPanelGenre] = useState<number | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const isMobile = useMediaQuery("(max-width: 899px)");
   const panelsRef = useRef<HTMLDivElement>(null);
 
   // Close bottom sheet if viewport flips from mobile to desktop mid-open
+  // Deferred to avoid synchronous setState inside effect (react-hooks/state-in-effect)
   useEffect(() => {
-    if (!isMobile) setOpenPanel(null);
+    if (!isMobile) {
+      const timeout = setTimeout(() => setOpenPanel(null), 0);
+      return () => clearTimeout(timeout);
+    }
   }, [isMobile]);
 
   // Desktop: scroll to panel area when a panel opens
@@ -76,6 +81,7 @@ export default function DashboardShell() {
       setPanelCategory(category);
       setPanelGenre(genreId ?? null);
       setOpenPanel("search");
+      setSearchLoading(true);
       try {
         const params = new URLSearchParams({ category });
         if (genreId) params.set("genre", String(genreId));
@@ -83,7 +89,9 @@ export default function DashboardShell() {
         const data = await res.json();
         setSearchResults(data.films ?? []);
       } catch {
-        // silently ignore network errors
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
       }
     },
     [],
@@ -105,7 +113,10 @@ export default function DashboardShell() {
       isOpen={true}
       embedded
       films={searchResults}
-      label={searchLabel}
+      isLoading={searchLoading}
+      activeCategory={panelCategory}
+      activeGenre={panelGenre}
+      onCategoryChange={handlePanelCategoryChange}
       onClose={closePanel}
     />
   );
@@ -154,7 +165,10 @@ export default function DashboardShell() {
           <SearchPanel
             isOpen={openPanel === "search"}
             films={searchResults}
-            label={searchLabel}
+            isLoading={searchLoading}
+            activeCategory={panelCategory}
+            activeGenre={panelGenre}
+            onCategoryChange={handlePanelCategoryChange}
             onClose={closePanel}
           />
           <ExplorePanel
