@@ -1,12 +1,67 @@
 "use client";
 
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import FilmGrid from "@/components/film/FilmGrid";
 import type { Film } from "@/lib/types";
+
+type SortOrder = "popularity" | "rating" | "newest" | "title";
+type BrowseCategory =
+  | "trending"
+  | "top-rated"
+  | "new-releases"
+  | "in-cinemas"
+  | "by-genre"
+  | "streaming-norway";
+
+const PANEL_CATEGORIES: { id: BrowseCategory; label: string }[] = [
+  { id: "trending", label: "Trending" },
+  { id: "top-rated", label: "Top Rated" },
+  { id: "new-releases", label: "New Releases" },
+  { id: "in-cinemas", label: "In Cinemas" },
+  { id: "by-genre", label: "By Genre" },
+  { id: "streaming-norway", label: "Streaming in Norway" },
+];
+
+const PANEL_GENRES = [
+  { id: 28, label: "Action" },
+  { id: 35, label: "Comedy" },
+  { id: 18, label: "Drama" },
+  { id: 27, label: "Horror" },
+  { id: 878, label: "Sci-Fi" },
+  { id: 10749, label: "Romance" },
+  { id: 53, label: "Thriller" },
+  { id: 16, label: "Animation" },
+  { id: 80, label: "Crime" },
+  { id: 14, label: "Fantasy" },
+  { id: 99, label: "Documentary" },
+  { id: 9648, label: "Mystery" },
+];
+
+function sortFilms(films: Film[], order: SortOrder): Film[] {
+  const sorted = [...films];
+  switch (order) {
+    case "rating":
+      return sorted.sort(
+        (a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0),
+      );
+    case "newest":
+      return sorted.sort((a, b) =>
+        (b.release_date ?? "").localeCompare(a.release_date ?? ""),
+      );
+    case "title":
+      return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    default:
+      return sorted; // popularity = API order
+  }
+}
 
 interface SearchPanelProps {
   isOpen: boolean;
   films: Film[];
-  label?: string;
+  activeCategory?: string | null;
+  activeGenre?: number | null;
+  onCategoryChange?: (category: BrowseCategory, genreId?: number) => void;
   onClose: () => void;
   embedded?: boolean;
 }
@@ -14,7 +69,9 @@ interface SearchPanelProps {
 export default function SearchPanel({
   isOpen,
   films,
-  label,
+  activeCategory,
+  activeGenre,
+  onCategoryChange,
   onClose,
   embedded,
 }: SearchPanelProps) {

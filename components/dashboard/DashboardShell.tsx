@@ -15,7 +15,8 @@ export default function DashboardShell() {
   const [selectedMoods, setSelectedMoods] = useState<Set<string>>(new Set());
   const [openPanel, setOpenPanel] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<Film[]>([]);
-  const [searchLabel, setSearchLabel] = useState<string | undefined>(undefined);
+  const [panelCategory, setPanelCategory] = useState<string | null>(null);
+  const [panelGenre, setPanelGenre] = useState<number | null>(null);
 
   const isMobile = useMediaQuery("(max-width: 899px)");
   const panelsRef = useRef<HTMLDivElement>(null);
@@ -60,9 +61,33 @@ export default function DashboardShell() {
     }
   }, []);
 
-  const handleSearchLabel = useCallback((label: string) => {
-    setSearchLabel(label);
-  }, []);
+  // Called from SearchBox pills to keep panel tabs in sync
+  const handleActiveCategory = useCallback(
+    (category: string | null, genreId?: number | null) => {
+      setPanelCategory(category);
+      setPanelGenre(genreId ?? null);
+    },
+    [],
+  );
+
+  // Called from SearchPanel tabs — fetches data and updates results
+  const handlePanelCategoryChange = useCallback(
+    async (category: string, genreId?: number) => {
+      setPanelCategory(category);
+      setPanelGenre(genreId ?? null);
+      setOpenPanel("search");
+      try {
+        const params = new URLSearchParams({ category });
+        if (genreId) params.set("genre", String(genreId));
+        const res = await fetch(`/api/movies/browse?${params.toString()}`);
+        const data = await res.json();
+        setSearchResults(data.films ?? []);
+      } catch {
+        // silently ignore network errors
+      }
+    },
+    [],
+  );
 
   // Panel content for bottom sheet (embedded mode, no animation wrapper)
   const moodPanelContent = (
@@ -111,7 +136,7 @@ export default function DashboardShell() {
         />
         <SearchBox
           onResults={handleSearchResults}
-          onLabel={handleSearchLabel}
+          onActiveCategory={handleActiveCategory}
           onExpand={() => setOpenPanel("search")}
           isExpanded={openPanel === "search"}
         />
