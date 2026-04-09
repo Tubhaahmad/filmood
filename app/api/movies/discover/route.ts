@@ -1,5 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buildTMDBParams, moodMap } from "@/lib/moodMap";
+import { buildTMDBParams, buildMergedTMDBParams, moodMap } from "@/lib/moodMap";
+
+// Shared helper: build a TMDB discover URL from param object + refinements
+function buildDiscoverURL(
+  apiKey: string,
+  moodParams: Record<string, string>,
+  refinements: { runtime: string | null; language: string | null; exclude: string | null },
+): URL {
+  const url = new URL("https://api.themoviedb.org/3/discover/movie");
+  url.searchParams.set("api_key", apiKey);
+  url.searchParams.set("language", "en-US");
+  url.searchParams.set("page", "1");
+
+  for (const [k, v] of Object.entries(moodParams)) {
+    url.searchParams.set(k, v);
+  }
+
+  if (refinements.runtime === "short") {
+    url.searchParams.set("with_runtime.lte", "100");
+  } else if (refinements.runtime === "long") {
+    url.searchParams.set("with_runtime.gte", "150");
+  }
+
+  if (refinements.language === "en") {
+    url.searchParams.set("with_original_language", "en");
+  } else if (refinements.language === "scand") {
+    url.searchParams.set("with_original_language", "en|no|sv|da|fi|is");
+  }
+
+  if (refinements.exclude) {
+    const existing = url.searchParams.get("without_genres");
+    const merged = existing ? `${existing},${refinements.exclude}` : refinements.exclude;
+    url.searchParams.set("without_genres", merged);
+  }
+
+  return url;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -33,57 +69,49 @@ export async function GET(request: NextRequest) {
   const runtime = searchParams.get("runtime");   // "short" | "long"
   const language = searchParams.get("language");  // "en" | "scand"
   const exclude = searchParams.get("exclude");    // comma-separated genre IDs
+  const refinements = { runtime, language, exclude };
 
   try {
-    // Fetch results for each mood in parallel
-    const fetches = moodKeys.map(async (key) => {
-      const moodParams = buildTMDBParams(key);
-      const url = new URL("https://api.themoviedb.org/3/discover/movie");
-      url.searchParams.set("api_key", apiKey);
-      url.searchParams.set("language", "en-US");
-      url.searchParams.set("page", "1");
+    // ── Primary: merged mood query ──
+    // For a single mood this behaves identically to the old per-mood fetch.
+    // For multiple moods it builds a single TMDB query that targets the
+    // genre intersection (or cross-genre AND), so results genuinely match
+    // the *combination* of moods rather than being a shuffled concat.
+    const mergedParams = buildMergedTMDBParams(moodKeys);
+    const mergedURL = buildDiscoverURL(apiKey, mergedParams, refinements);
 
-      for (const [k, v] of Object.entries(moodParams)) {
-        url.searchParams.set(k, v);
-      }
+    const mergedRes = await fetch(mergedURL.toString());
+    if (!mergedRes.ok) throw new Error(`TMDB error: ${mergedRes.status}`);
+    const mergedData = await mergedRes.json();
+    let films: { id: number }[] = mergedData.results ?? [];
 
-      // Apply refinements
-      if (runtime === "short") {
-        url.searchParams.set("with_runtime.lte", "100");
-      } else if (runtime === "long") {
-        url.searchParams.set("with_runtime.gte", "150");
-      }
+    // ── Fallback: if the merged query returned < 5 films and we have
+    //    multiple moods, supplement with per-mood results so the page
+    //    never feels empty. The blended results stay at the top. ──
+    if (films.length < 5 && moodKeys.length > 1) {
+      const seen = new Set(films.map((f) => f.id));
 
-      if (language === "en") {
-        url.searchParams.set("with_original_language", "en");
-      } else if (language === "scand") {
-        url.searchParams.set("with_original_language", "en|no|sv|da|fi|is");
-      }
+      const fallbackFetches = moodKeys.map(async (key) => {
+        const params = buildTMDBParams(key);
+        const url = buildDiscoverURL(apiKey, params, refinements);
+        const res = await fetch(url.toString());
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.results ?? []) as { id: number }[];
+      });
 
-      if (exclude) {
-        const existing = url.searchParams.get("without_genres");
-        const merged = existing ? `${existing},${exclude}` : exclude;
-        url.searchParams.set("without_genres", merged);
-      }
-
-      const res = await fetch(url.toString());
-      if (!res.ok) throw new Error(`TMDB error: ${res.status}`);
-      const data = await res.json();
-      return data.results ?? [];
-    });
-
-    const allResults = await Promise.all(fetches);
-
-    // Merge and deduplicate by movie ID, keep first occurrence
-    const seen = new Set<number>();
-    const films = allResults
-      .flat()
-      .filter((film: { id: number }) => {
-        if (seen.has(film.id)) return false;
-        seen.add(film.id);
+      const fallbackResults = await Promise.all(fallbackFetches);
+      const extras = fallbackResults.flat().filter((f) => {
+        if (seen.has(f.id)) return false;
+        seen.add(f.id);
         return true;
-      })
-      .slice(0, 20);
+      });
+
+      // Merged (blended) results first, then individual mood results
+      films = [...films, ...extras];
+    }
+
+    films = films.slice(0, 20);
 
     const labels = moodKeys.map((k) => moodMap[k].label);
 

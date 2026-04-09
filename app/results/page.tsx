@@ -71,7 +71,7 @@ function TopPick({
   providers: Provider[] | null;
   providersLoading: boolean;
 }) {
-  const isMobile = useMediaQuery("(max-width: 720px)");
+  const isMobile = useMediaQuery("(max-width: 820px)");
   const year = film.release_date
     ? new Date(film.release_date).getFullYear()
     : "";
@@ -86,7 +86,7 @@ function TopPick({
         position: "relative",
         width: "100%",
         maxWidth: "820px",
-        margin: "0 auto 40px",
+        margin: isMobile ? "0 auto 28px" : "0 auto 40px",
       }}
     >
       {/* Accent glow aura */}
@@ -94,7 +94,7 @@ function TopPick({
         aria-hidden="true"
         style={{
           position: "absolute",
-          inset: "-40px",
+          inset: isMobile ? "-20px" : "-40px",
           background: `radial-gradient(ellipse at center, ${accent.glow} 0%, transparent 60%)`,
           filter: "blur(40px)",
           opacity: 0.9,
@@ -124,7 +124,7 @@ function TopPick({
           style={{
             position: "relative",
             width: "100%",
-            minHeight: isMobile ? "360px" : "450px",
+            minHeight: isMobile ? "320px" : "450px",
             background: "var(--surface2)",
           }}
         >
@@ -133,7 +133,7 @@ function TopPick({
               src={posterUrl}
               alt={film.title}
               fill
-              sizes="(max-width: 720px) 100vw, 300px"
+              sizes="(max-width: 820px) 100vw, 300px"
               style={{ objectFit: "cover" }}
               priority
             />
@@ -347,7 +347,7 @@ function TopPick({
               justifyContent: "center",
               gap: "8px",
               marginTop: "4px",
-              padding: "14px 24px",
+              padding: isMobile ? "12px 20px" : "14px 24px",
               borderRadius: "10px",
               background: accent.base,
               color: "#0a0a0c",
@@ -357,6 +357,7 @@ function TopPick({
               transition: "all 0.25s ease",
               textTransform: "uppercase",
               letterSpacing: "1px",
+              width: isMobile ? "100%" : "auto",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.filter = "brightness(1.1)";
@@ -644,7 +645,7 @@ function ResultsContent() {
 
       {/* ── More matches ── */}
       {restFilms.length > 0 && (
-        <div style={{ width: "100%", maxWidth: "1200px" }}>
+        <div style={{ width: "100%", maxWidth: "1200px", boxSizing: "border-box" }}>
           <div
             style={{
               display: "flex",
@@ -782,15 +783,25 @@ function ResultsContent() {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
           gap: 14px;
+          width: 100%;
         }
         @media (max-width: 1100px) {
           .results-film-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
         }
         @media (max-width: 900px) {
-          .results-film-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+          .results-film-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
         }
-        @media (max-width: 560px) {
-          .results-film-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        @media (max-width: 740px) {
+          .results-film-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+        @media (max-width: 440px) {
+          .results-film-grid { grid-template-columns: 1fr; gap: 12px; max-width: 320px; margin: 0 auto; }
+        }
+        @media (max-width: 740px) {
+          .results-page-wrapper { padding-left: 16px !important; padding-right: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .results-page-wrapper { padding-left: 12px !important; padding-right: 12px !important; padding-top: 32px !important; padding-bottom: 40px !important; }
         }
       `}</style>
     </>
@@ -828,15 +839,19 @@ export default function ResultsPage() {
       />
 
       <div
+        className="results-page-wrapper"
         style={{
           position: "relative",
           zIndex: 1,
           maxWidth: "1400px",
+          width: "100%",
           margin: "0 auto",
           padding: "48px 28px 60px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
         <Suspense
