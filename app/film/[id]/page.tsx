@@ -60,7 +60,6 @@ export default async function FilmDetailPage({
           max-width: 1100px;
           margin: 0 auto;
         }
-
         .fd-backdrop {
           position: relative;
           width: 100%;
@@ -103,29 +102,9 @@ export default async function FilmDetailPage({
           background: var(--surface2);
           position: relative;
         }
-        .fd-sidebar-meta { margin-top: 16px; }
-        .fd-sidebar-title {
-          font-family: var(--font-serif, Georgia, serif);
-          font-size: 17px;
-          font-weight: 600;
-          color: var(--t1);
-          line-height: 1.3;
-          margin-bottom: 10px;
-          transition: color 0.2s;
-        }
-        .fd-sidebar-rating-row {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          flex-wrap: wrap;
-          margin-bottom: 10px;
-        }
-        .fd-sidebar-genres {
-          display: flex;
-          gap: 5px;
-          flex-wrap: wrap;
-          margin-bottom: 14px;
-        }
+        .fd-info { min-width: 0; }
+
+        /* ── Buttons — dark mode default (frosted glass over backdrop) ── */
         .fd-actions { display: flex; flex-direction: column; gap: 8px; }
         .fd-btn {
           display: flex;
@@ -136,16 +115,40 @@ export default async function FilmDetailPage({
           border-radius: 12px;
           font-size: 13px;
           font-weight: 500;
-          background: none;
-          color: var(--t2);
-          border: 1px solid var(--border);
+          background: rgba(255, 255, 255, 0.12);
+          color: rgba(255, 255, 255, 0.9);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           cursor: pointer;
           width: 100%;
-          transition: border-color 0.2s, color 0.2s;
+          transition: border-color 0.2s, color 0.2s, background 0.2s;
         }
-        .fd-btn:hover { border-color: var(--border-h); color: var(--t1); }
-        .fd-info { min-width: 0; }
+        .fd-btn:hover {
+          background: rgba(255, 255, 255, 0.18);
+          color: #fff;
+          border-color: rgba(255, 255, 255, 0.45);
+        }
 
+        /* ── Light mode: match genre tag styling ── */
+        [data-theme="light"] .fd-btn {
+          background: var(--tag-bg);
+          color: var(--t1);
+          border: 1px solid var(--tag-border);
+        }
+        [data-theme="light"] .fd-btn:hover {
+          background: var(--surface2);
+          color: var(--t1);
+          border-color: var(--border-h);
+        }
+
+        /* ── Desktop header ── */
+        .fd-desktop-header { display: block; margin-bottom: 24px; }
+        .fd-desktop-actions { display: flex; gap: 8px; margin-top: 16px; }
+        .fd-desktop-actions .fd-btn { width: auto; flex: 1; }
+
+        /* ── Mobile header ── */
+        .fd-mobile-header { display: none; }
+
+        /* ── Tablet (≤ 860px) ── */
         @media (max-width: 860px) {
           .fd-breadcrumb-wrap { padding: 12px 16px 0; }
           .fd-backdrop   { height: 260px; }
@@ -155,27 +158,34 @@ export default async function FilmDetailPage({
           .fd-sidebar {
             position: relative;
             top: auto;
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            gap: 16px;
-            align-items: end;
-            margin-bottom: 24px;
+            display: block;
+            margin-bottom: 20px;
           }
-          .fd-sidebar-meta { display: none !important; }
-          .fd-actions { flex-direction: row; flex-wrap: wrap; margin-top: 8px; }
-          .fd-btn { width: auto; flex: 1; min-width: 120px; }
+          .fd-poster { width: 160px; margin: 0 auto 0 0; }
+          .fd-desktop-header { display: none; }
+          .fd-mobile-header  { display: block; margin-bottom: 16px; }
+          .fd-btn {
+            background: var(--tag-bg);
+            color: var(--t1);
+            border: 1px solid var(--tag-border);
+          }
+          .fd-btn:hover {
+            background: var(--surface2);
+            color: var(--t1);
+            border-color: var(--border-h);
+          }
         }
 
+        /* ── Mobile (≤ 500px) ── */
         @media (max-width: 500px) {
           .fd-breadcrumb-wrap { padding: 10px 12px 0; }
           .fd-backdrop   { height: 200px; }
           .fd-outer      { padding: 0 12px 32px; }
           .fd-outer.has-backdrop { margin-top: -80px; }
-          .fd-sidebar { grid-template-columns: 110px 1fr; gap: 12px; }
-          .fd-actions { flex-direction: column; }
-          .fd-btn { width: 100%; }
+          .fd-poster { width: 130px; }
         }
 
+        /* ── Cast scroll ── */
         .fd-cast-scroll {
           display: flex;
           gap: 12px;
@@ -187,16 +197,6 @@ export default async function FilmDetailPage({
         .fd-cast-scroll::-webkit-scrollbar       { height: 4px; }
         .fd-cast-scroll::-webkit-scrollbar-track  { background: transparent; }
         .fd-cast-scroll::-webkit-scrollbar-thumb  { background: var(--border-h); border-radius: 2px; }
-
-        .fd-sidebar-meta  { display: block; }
-        .fd-mobile-header { display: none; }
-        .fd-mobile-actions { display: none; }
-
-        @media (max-width: 860px) {
-          .fd-sidebar-meta   { display: none; }
-          .fd-mobile-header  { display: block; }
-          .fd-mobile-actions { display: block; }
-        }
       `}</style>
 
       {backdropUrl ? (
@@ -240,7 +240,7 @@ export default async function FilmDetailPage({
         className={`fd-outer ${backdropUrl ? "has-backdrop" : "no-backdrop"}`}
       >
         <div className="fd-grid">
-          {/* ── Sidebar ── */}
+          {/* ── Sidebar: poster only ── */}
           <div className="fd-sidebar">
             <div className="fd-poster">
               {detail.poster_path ? (
@@ -273,73 +273,12 @@ export default async function FilmDetailPage({
                 </div>
               )}
             </div>
-
-            {/* Desktop: title, rating, genres, buttons under poster */}
-            <div className="fd-sidebar-meta">
-              <div className="fd-sidebar-title">{detail.title}</div>
-              <div className="fd-sidebar-rating-row">
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    padding: "3px 8px",
-                    borderRadius: "6px",
-                    background: "var(--gold-soft)",
-                    border: "1px solid rgba(196,163,90,0.2)",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    color: "var(--gold)",
-                  }}
-                >
-                  ★ {detail.vote_average?.toFixed(1)}
-                </span>
-                <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
-                  {year}
-                </span>
-                {detail.runtime && (
-                  <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
-                    {detail.runtime} min
-                  </span>
-                )}
-              </div>
-              <div className="fd-sidebar-genres">
-                {detail.genres?.map((g) => (
-                  <span
-                    key={g.id}
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: "100px",
-                      fontSize: "11px",
-                      fontWeight: 600,
-                      background: "var(--tag-bg)",
-                      border: "1px solid var(--tag-border)",
-                      color: "var(--t1)",
-                    }}
-                  >
-                    {g.name}
-                  </span>
-                ))}
-              </div>
-              <div className="fd-actions">
-                <button className="fd-btn">♡ Watchlist</button>
-                <button className="fd-btn">↗ Share</button>
-              </div>
-            </div>
-
-            {/* Mobile: actions beside poster */}
-            <div className="fd-mobile-actions">
-              <div className="fd-actions" style={{ marginTop: "8px" }}>
-                <button className="fd-btn">♡ Watchlist</button>
-                <button className="fd-btn">↗ Share</button>
-              </div>
-            </div>
           </div>
 
-          {/* Info column*/}
+          {/* ── Info column ── */}
           <div className="fd-info">
-            {/* Title — desktop only (aria-hidden to avoid duplicate h1 for screen readers) */}
-            <div className="fd-desktop-title" aria-hidden="true" style={{ marginBottom: "8px" }}>
+            {/* Desktop: title, meta, genres, buttons */}
+            <div className="fd-desktop-header">
               <p
                 role="presentation"
                 className="font-serif"
@@ -354,19 +293,6 @@ export default async function FilmDetailPage({
               >
                 {detail.title}
               </p>
-            </div>
-
-            {/* Meta row — desktop only */}
-            <div
-              className="fd-desktop-meta"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                flexWrap: "wrap",
-                marginBottom: "16px",
-              }}
-            >
               <span
                 style={{
                   display: "flex",
@@ -374,7 +300,8 @@ export default async function FilmDetailPage({
                   gap: "8px",
                   flexWrap: "wrap",
                   marginBottom: "12px",
-                }} >
+                }}
+              >
                 <span
                   style={{
                     display: "inline-flex",
@@ -388,16 +315,30 @@ export default async function FilmDetailPage({
                     fontWeight: 700,
                     color: "var(--gold)",
                   }}
-                  >
+                >
                   ★ {detail.vote_average?.toFixed(1)}
                 </span>
-                <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: "var(--t1)",
+                  }}
+                >
                   {year}
                 </span>
                 {detail.runtime && (
                   <>
-                    <span style={{ fontSize: "10px", color: "var(--t2)" }}>·</span>
-                    <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
+                    <span style={{ fontSize: "10px", color: "var(--t2)" }}>
+                      ·
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--t1)",
+                      }}
+                    >
                       {detail.runtime} min
                     </span>
                   </>
@@ -427,6 +368,108 @@ export default async function FilmDetailPage({
                     {g.name}
                   </span>
                 ))}
+              </div>
+              <div className="fd-desktop-actions">
+                <button className="fd-btn">♡ Watchlist</button>
+                <button className="fd-btn">↗ Share</button>
+              </div>
+            </div>
+
+            {/* Mobile/tablet: title, meta, genres, stacked buttons */}
+            <div className="fd-mobile-header">
+              <h1
+                className="font-serif"
+                style={{
+                  fontSize: "clamp(20px, 5vw, 28px)",
+                  fontWeight: 600,
+                  color: "var(--t1)",
+                  lineHeight: 1.15,
+                  margin: "0 0 10px",
+                  transition: "color 0.2s",
+                }}
+              >
+                {detail.title}
+              </h1>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  flexWrap: "wrap",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    padding: "3px 8px",
+                    borderRadius: "6px",
+                    background: "var(--gold-soft)",
+                    border: "1px solid rgba(196,163,90,0.25)",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    color: "var(--gold)",
+                  }}
+                >
+                  ★ {detail.vote_average?.toFixed(1)}
+                </span>
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    color: "var(--t1)",
+                  }}
+                >
+                  {year}
+                </span>
+                {detail.runtime && (
+                  <>
+                    <span style={{ fontSize: "10px", color: "var(--t2)" }}>
+                      ·
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 500,
+                        color: "var(--t1)",
+                      }}
+                    >
+                      {detail.runtime} min
+                    </span>
+                  </>
+                )}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  flexWrap: "wrap",
+                  marginBottom: "14px",
+                }}
+              >
+                {detail.genres?.map((g) => (
+                  <span
+                    key={g.id}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: "100px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      background: "var(--tag-bg)",
+                      border: "1px solid var(--tag-border)",
+                      color: "var(--t1)",
+                    }}
+                  >
+                    {g.name}
+                  </span>
+                ))}
+              </div>
+              {/* Stacked buttons */}
+              <div className="fd-actions" style={{ marginBottom: "20px" }}>
+                <button className="fd-btn">♡ Watchlist</button>
+                <button className="fd-btn">↗ Share</button>
               </div>
             </div>
 
