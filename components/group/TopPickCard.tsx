@@ -54,7 +54,7 @@ export default function TopPickCard({
     >
       {/* Gold glow aura sitting behind the card */}
       <div
-        aria-hidden
+        aria-hidden="true"
         style={{
           position: "absolute",
           inset: "-40px",
@@ -86,6 +86,8 @@ export default function TopPickCard({
       >
         {/* Poster */}
         <div
+          role="img"
+          aria-label={`${movie.title} poster`}
           style={{
             position: "relative",
             width: "100%",

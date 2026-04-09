@@ -58,9 +58,9 @@ export default function HeroSection() {
       style={{
         position: "relative",
         width: "100%",
-        height: isMobile ? "52vh" : "56vh",
-        minHeight: isMobile ? "360px" : "420px",
-        maxHeight: "620px",
+        height: isMobile ? "40vh" : "42vh",
+        minHeight: isMobile ? "280px" : "320px",
+        maxHeight: "460px",
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
@@ -136,7 +136,7 @@ export default function HeroSection() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: "120px",
+          height: "80px",
           background: "linear-gradient(to bottom, transparent 0%, var(--bg) 100%)",
           zIndex: 1,
         }}
@@ -151,13 +151,13 @@ export default function HeroSection() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: isMobile ? "18px" : "24px",
+          gap: isMobile ? "14px" : "18px",
           padding: "0 24px",
         }}
       >
         <FilmoodLogo
           variant={prefersReducedMotion ? "static" : "hero"}
-          size={isMobile ? 80 : 110}
+          size={isMobile ? 64 : 88}
         />
 
         {/* Tagline with cycling mood word */}

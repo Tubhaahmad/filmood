@@ -49,6 +49,8 @@ export default function ResultMovieCard({
     >
       {/* Poster */}
       <div
+        role="img"
+        aria-label={`${movie.title} poster`}
         style={{
           width: "100%",
           aspectRatio: "2 / 3",

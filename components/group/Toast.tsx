@@ -11,6 +11,9 @@ export default function ToastContainer({ toasts }: ToastContainerProps) {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       style={{
         position: "fixed",
         top: "72px",

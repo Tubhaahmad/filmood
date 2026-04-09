@@ -28,6 +28,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
+import Breadcrumb from "@/components/Breadcrumb";
 import { useEffect } from "react";
 import ProfileHero from "@/components/profile/ProfileHero";
 import AccountSettings from "@/components/profile/AccountSettings";
@@ -56,6 +57,14 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-(--bg)">
       <div className="mx-auto max-w-275 px-7 pt-8 pb-16 md:px-3.5 md:pt-5 md:pb-12">
+        <div style={{ marginBottom: "16px" }}>
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Profile" },
+            ]}
+          />
+        </div>
         <ProfileHero user={user} />
 
         <div className="mt-5 grid grid-cols-1 gap-5 items-start lg:grid-cols-[340px_1fr]">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import Breadcrumb from "@/components/Breadcrumb";
 import SessionCreator from "@/components/group/SessionCreator";
 import SessionJoin from "@/components/group/SessionJoin";
 
@@ -63,6 +64,16 @@ function GroupPageContent() {
           zIndex: 2,
         }}
       >
+        {/* Breadcrumb */}
+        <div style={{ marginBottom: "20px" }}>
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Group Session" },
+            ]}
+          />
+        </div>
+
         {/* Header */}
         <div className="lobby-section-1 text-center" style={{ marginBottom: "12px" }}>
           <h1

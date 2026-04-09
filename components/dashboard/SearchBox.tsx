@@ -337,7 +337,12 @@ export default function SearchBox({
 
   return (
     <section
+      role="button"
+      tabIndex={0}
       onClick={handleSectionClick}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSectionClick(); } }}
+      aria-expanded={isExpanded}
+      aria-label="Find anything — search by film, actor, or director"
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
@@ -535,6 +540,12 @@ export default function SearchBox({
                   (e.currentTarget.style.background = "var(--surface2)")
                 }
                 onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+                onFocus={(e) =>
+                  (e.currentTarget.style.background = "var(--surface2)")
+                }
+                onBlur={(e) =>
                   (e.currentTarget.style.background = "transparent")
                 }
               >

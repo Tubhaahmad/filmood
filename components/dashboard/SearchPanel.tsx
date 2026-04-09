@@ -477,6 +477,7 @@ export default function SearchPanel({
           )}
         </div>
 
+        <label htmlFor="panel-sort" className="sr-only">Sort by</label>
         <select
           id="panel-sort"
           name="panel-sort"

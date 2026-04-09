@@ -21,8 +21,8 @@
   --border-active: rgba(255, 255, 255, 0.20);
 
   /* Tags */
-  --tag-bg: rgba(255, 255, 255, 0.06);
-  --tag-border: rgba(255, 255, 255, 0.08);
+  --tag-bg: rgba(255, 255, 255, 0.12);
+  --tag-border: rgba(255, 255, 255, 0.22);
 
   /* Accents — gold */
   --gold: #c4a35a;
@@ -92,8 +92,8 @@
   --border-h: rgba(0, 0, 0, 0.14);
   --border-active: rgba(0, 0, 0, 0.22);
 
-  --tag-bg: rgba(0, 0, 0, 0.04);
-  --tag-border: rgba(0, 0, 0, 0.08);
+  --tag-bg: rgba(0, 0, 0, 0.07);
+  --tag-border: rgba(0, 0, 0, 0.18);
 
   --gold: #9a7d30;
   --gold-soft: rgba(154, 125, 48, 0.10);
@@ -459,6 +459,13 @@ svg.logo-static { overflow: visible; }
   .hero-grain {
     animation: none !important;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Footer
+   ═══════════════════════════════════════════════════════════ */
+.footer-nav-link:hover {
+  color: var(--t1) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════

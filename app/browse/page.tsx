@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 import FilmCard from "@/components/film/FilmCard";
 import type { Film } from "@/lib/types";
 
@@ -324,7 +324,7 @@ function BrowseContent() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <main style={{ minHeight: "100vh", background: "var(--bg)" }}>
       {/* Hero header area with blue atmosphere */}
       <div
         style={{
@@ -365,34 +365,17 @@ function BrowseContent() {
 
         <div className="browse-container" style={{ position: "relative" }}>
           {/* Breadcrumb */}
-          <div
-            style={{
-              paddingTop: "18px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "var(--t3)",
-            }}
-          >
-            <Link
-              href="/"
-              style={{
-                color: "var(--t3)",
-                textDecoration: "none",
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t1)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
-            >
-              Home
-            </Link>
-            <span style={{ fontSize: "10px" }}>›</span>
-            <span style={{ color: "var(--t2)" }}>
-              {activeGenreLabel
-                ? `${currentTab.heading} — ${activeGenreLabel}`
-                : currentTab.heading}
-            </span>
+          <div style={{ paddingTop: "18px" }}>
+            <Breadcrumb
+              items={[
+                { label: "Home", href: "/" },
+                {
+                  label: activeGenreLabel
+                    ? `${currentTab.heading} — ${activeGenreLabel}`
+                    : currentTab.heading,
+                },
+              ]}
+            />
           </div>
 
           {/* Heading + count */}
@@ -531,6 +514,12 @@ function BrowseContent() {
                     (e.currentTarget.style.background = "var(--blue-soft)")
                   }
                   onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "var(--surface3)")
+                  }
+                  onFocus={(e) =>
+                    (e.currentTarget.style.background = "var(--blue-soft)")
+                  }
+                  onBlur={(e) =>
                     (e.currentTarget.style.background = "var(--surface3)")
                   }
                   aria-label="Clear search"
@@ -678,9 +667,9 @@ function BrowseContent() {
               gap: "8px",
             }}
           >
-            <span style={{ fontSize: "12px", color: "var(--t3)" }}>
+            <label htmlFor="browse-sort" style={{ fontSize: "12px", color: "var(--t3)" }}>
               Sort by
-            </span>
+            </label>
             <select
               id="browse-sort"
               name="browse-sort"
@@ -860,6 +849,12 @@ function BrowseContent() {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.transform = "none";
               }}
+              onFocus={(e) => {
+                if (page !== 1) e.currentTarget.style.borderColor = "var(--border-h)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
             >
               <svg
                 width="16"
@@ -959,6 +954,12 @@ function BrowseContent() {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.transform = "none";
               }}
+              onFocus={(e) => {
+                if (page !== totalPages) e.currentTarget.style.borderColor = "var(--border-h)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
             >
               <svg
                 width="16"
@@ -1004,7 +1005,7 @@ function BrowseContent() {
           .browse-film-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
         }
       `}</style>
-    </div>
+    </main>
   );
 }
 

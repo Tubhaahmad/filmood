@@ -140,14 +140,16 @@ export default function LobbyActions({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      {error && (
-        <p
-          className="font-sans"
-          style={{ fontSize: "13px", color: "var(--rose)" }}
-        >
-          {error}
-        </p>
-      )}
+      <div role="alert" aria-live="assertive">
+        {error && (
+          <p
+            className="font-sans"
+            style={{ fontSize: "13px", color: "var(--rose)" }}
+          >
+            {error}
+          </p>
+        )}
+      </div>
 
       {/* Ready toggle */}
       <button
