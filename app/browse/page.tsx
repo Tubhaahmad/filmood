@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 import FilmCard from "@/components/film/FilmCard";
 import type { Film } from "@/lib/types";
 
@@ -289,32 +289,17 @@ function BrowseContent() {
 
         <div className="browse-container" style={{ position: "relative" }}>
           {/* Breadcrumb */}
-          <div
-            style={{
-              paddingTop: "18px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "var(--t3)",
-            }}
-          >
-            <Link
-              href="/"
-              style={{ color: "var(--t3)", textDecoration: "none", transition: "color 0.15s" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t1)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
-              onFocus={(e) => (e.currentTarget.style.color = "var(--t1)")}
-              onBlur={(e) => (e.currentTarget.style.color = "var(--t3)")}
-            >
-              Home
-            </Link>
-            <span style={{ fontSize: "10px" }}>›</span>
-            <span style={{ color: "var(--t2)" }}>
-              {activeGenreLabel
-                ? `${currentTab.heading} — ${activeGenreLabel}`
-                : currentTab.heading}
-            </span>
+          <div style={{ paddingTop: "18px" }}>
+            <Breadcrumb
+              items={[
+                { label: "Home", href: "/" },
+                {
+                  label: activeGenreLabel
+                    ? `${currentTab.heading} — ${activeGenreLabel}`
+                    : currentTab.heading,
+                },
+              ]}
+            />
           </div>
 
           {/* Heading + count */}

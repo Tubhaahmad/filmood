@@ -7,6 +7,7 @@ import { useParticipantId } from "@/lib/useParticipantId";
 import { useGroupRealtime } from "@/lib/useGroupRealtime";
 import { getAuthHeaders } from "@/lib/getAuthToken";
 import { allMoods } from "@/lib/moodMap";
+import Breadcrumb from "@/components/Breadcrumb";
 import MoodCard from "@/components/dashboard/MoodCard";
 
 type Phase = "selecting" | "submitting" | "waiting" | "building";
@@ -349,6 +350,17 @@ export default function GroupMoodPage() {
           zIndex: 2,
         }}
       >
+        {/* Breadcrumb */}
+        <div style={{ marginBottom: "20px" }}>
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Group", href: "/group" },
+              { label: "Mood Selection" },
+            ]}
+          />
+        </div>
+
         {/* Hero — heading + subtitle */}
         <div className="lobby-section-1 text-center" style={{ marginBottom: "8px" }}>
           <h1

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useParticipantId } from "@/lib/useParticipantId";
 import { useGroupRealtime } from "@/lib/useGroupRealtime";
+import Breadcrumb from "@/components/Breadcrumb";
 import ParticipantList from "@/components/group/ParticipantList";
 import LobbyActions from "@/components/group/LobbyActions";
 import InviteStrip from "@/components/group/InviteStrip";
@@ -272,6 +273,17 @@ export default function LobbyPage() {
           zIndex: 2,
         }}
       >
+        {/* Breadcrumb */}
+        <div style={{ marginBottom: "20px" }}>
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Group", href: "/group" },
+              { label: `Lobby (${code})` },
+            ]}
+          />
+        </div>
+
         {/* Hero — heading + subtitle */}
         <div className="lobby-section-1 text-center" style={{ marginBottom: "8px" }}>
           <h1

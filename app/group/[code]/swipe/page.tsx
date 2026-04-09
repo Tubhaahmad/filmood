@@ -6,6 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useParticipantId } from "@/lib/useParticipantId";
 import { useGroupRealtime } from "@/lib/useGroupRealtime";
 import { getAuthHeaders } from "@/lib/getAuthToken";
+import Breadcrumb from "@/components/Breadcrumb";
 import SwipeDeck from "@/components/group/SwipeDeck";
 import type { DeckFilm, SwipeVote } from "@/lib/types";
 import { AVATAR_COLORS } from "@/lib/constants";
@@ -299,6 +300,17 @@ export default function GroupSwipePage() {
       }}
     >
       <div className="lobby-ambient" />
+
+      {/* Breadcrumb */}
+      <div style={{ padding: "14px 28px 0", position: "relative", zIndex: 2 }}>
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Group", href: "/group" },
+            { label: "Swipe" },
+          ]}
+        />
+      </div>
 
       {/* Progress strip */}
       <div

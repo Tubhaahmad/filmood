@@ -1,8 +1,8 @@
 import type { FilmDetail, Provider, TrailerData } from "@/lib/types";
 import TrailerEmbed from "@/components/film/TrailerEmbed";
 import WatchProviders from "@/components/film/WatchProviders";
+import Breadcrumb from "@/components/Breadcrumb";
 import Image from "next/image";
-import Link from "next/link";
 import { headers } from "next/headers";
 
 function SectionLabel({ children }: { children: string }) {
@@ -55,32 +55,10 @@ export default async function FilmDetailPage({
   return (
     <main style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <style>{`
-        .fd-breadcrumb {
+        .fd-breadcrumb-wrap {
           padding: 14px 28px 0;
           max-width: 1100px;
           margin: 0 auto;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-        }
-        .fd-breadcrumb-link {
-          color: var(--t1);
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .fd-breadcrumb-link:hover { opacity: 0.7; }
-        .fd-breadcrumb-sep {
-          color: var(--t3);
-          font-size: 10px;
-          transition: color 0.2s;
-        }
-        .fd-breadcrumb-current {
-          color: var(--t1);
-          transition: color 0.2s;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
         }
 
         .fd-backdrop {
@@ -169,7 +147,7 @@ export default async function FilmDetailPage({
         .fd-info { min-width: 0; }
 
         @media (max-width: 860px) {
-          .fd-breadcrumb { padding: 12px 16px 0; }
+          .fd-breadcrumb-wrap { padding: 12px 16px 0; }
           .fd-backdrop   { height: 260px; }
           .fd-outer      { padding: 0 16px 40px; }
           .fd-outer.has-backdrop { margin-top: -110px; }
@@ -189,7 +167,7 @@ export default async function FilmDetailPage({
         }
 
         @media (max-width: 500px) {
-          .fd-breadcrumb { padding: 10px 12px 0; }
+          .fd-breadcrumb-wrap { padding: 10px 12px 0; }
           .fd-backdrop   { height: 200px; }
           .fd-outer      { padding: 0 12px 32px; }
           .fd-outer.has-backdrop { margin-top: -80px; }
@@ -228,7 +206,7 @@ export default async function FilmDetailPage({
         >
           <div className="fd-backdrop-overlay" />
           <div
-            className="fd-breadcrumb"
+            className="fd-breadcrumb-wrap"
             style={{
               position: "absolute",
               top: 0,
@@ -237,28 +215,24 @@ export default async function FilmDetailPage({
               zIndex: 2,
             }}
           >
-            <Link href="/" className="fd-breadcrumb-link">
-              Home
-            </Link>
-            <span className="fd-breadcrumb-sep">/</span>
-            <Link href="/results" className="fd-breadcrumb-link">
-              Results
-            </Link>
-            <span className="fd-breadcrumb-sep">/</span>
-            <span className="fd-breadcrumb-current">{detail.title}</span>
+            <Breadcrumb
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Results", href: "/results" },
+                { label: detail.title },
+              ]}
+            />
           </div>
         </div>
       ) : (
-        <div className="fd-breadcrumb">
-          <Link href="/" className="fd-breadcrumb-link">
-            Home
-          </Link>
-          <span className="fd-breadcrumb-sep">/</span>
-          <Link href="/results" className="fd-breadcrumb-link">
-            Results
-          </Link>
-          <span className="fd-breadcrumb-sep">/</span>
-          <span className="fd-breadcrumb-current">{detail.title}</span>
+        <div className="fd-breadcrumb-wrap">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Results", href: "/results" },
+              { label: detail.title },
+            ]}
+          />
         </div>
       )}
 
@@ -320,11 +294,11 @@ export default async function FilmDetailPage({
                 >
                   ★ {detail.vote_average?.toFixed(1)}
                 </span>
-                <span style={{ fontSize: "12px", color: "var(--t2)" }}>
+                <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
                   {year}
                 </span>
                 {detail.runtime && (
-                  <span style={{ fontSize: "12px", color: "var(--t2)" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
                     {detail.runtime} min
                   </span>
                 )}
@@ -336,11 +310,11 @@ export default async function FilmDetailPage({
                     style={{
                       padding: "4px 10px",
                       borderRadius: "100px",
-                      fontSize: "10px",
-                      fontWeight: 500,
+                      fontSize: "11px",
+                      fontWeight: 600,
                       background: "var(--tag-bg)",
                       border: "1px solid var(--tag-border)",
-                      color: "var(--t2)",
+                      color: "var(--t1)",
                     }}
                   >
                     {g.name}
@@ -409,21 +383,24 @@ export default async function FilmDetailPage({
                     padding: "3px 8px",
                     borderRadius: "6px",
                     background: "var(--gold-soft)",
-                    border: "1px solid rgba(196,163,90,0.2)",
+                    border: "1px solid rgba(196,163,90,0.25)",
                     fontSize: "12px",
                     fontWeight: 700,
                     color: "var(--gold)",
-                  }} 
+                  }}
                   >
                   ★ {detail.vote_average?.toFixed(1)}
                 </span>
-                <span style={{ fontSize: "12px", color: "var(--t2)" }}>
+                <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
                   {year}
                 </span>
                 {detail.runtime && (
-                  <span style={{ fontSize: "12px", color: "var(--t2)" }}>
-                    {detail.runtime} min
-                  </span>
+                  <>
+                    <span style={{ fontSize: "10px", color: "var(--t2)" }}>·</span>
+                    <span style={{ fontSize: "13px", fontWeight: 500, color: "var(--t1)" }}>
+                      {detail.runtime} min
+                    </span>
+                  </>
                 )}
               </span>
               <div
@@ -440,11 +417,11 @@ export default async function FilmDetailPage({
                     style={{
                       padding: "5px 12px",
                       borderRadius: "100px",
-                      fontSize: "11px",
-                      fontWeight: 500,
+                      fontSize: "12px",
+                      fontWeight: 600,
                       background: "var(--tag-bg)",
                       border: "1px solid var(--tag-border)",
-                      color: "var(--t2)",
+                      color: "var(--t1)",
                     }}
                   >
                     {g.name}
@@ -605,7 +582,7 @@ export default async function FilmDetailPage({
                       style={{
                         fontSize: "12px",
                         fontWeight: 500,
-                        color: "var(--t3)",
+                        color: "var(--t2)",
                         transition: "color 0.2s",
                       }}
                     >

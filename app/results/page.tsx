@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 import FilmGrid from "@/components/film/FilmGrid";
 import type { Film, AccentColor } from "@/lib/types";
 import { moodMap } from "@/lib/moodMap";
@@ -71,23 +72,14 @@ function Hero({ moods, filmCount }: { moods: string[]; filmCount: number }) {
         padding: "clamp(28px, 5vw, 44px) clamp(20px, 5vw, 40px)",
       }}
     >
-      <Link
-        href="/"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "5px",
-          fontSize: "11px",
-          fontWeight: 500,
-          color: "var(--t3)",
-          textDecoration: "none",
-          marginBottom: "16px",
-          letterSpacing: "0.04em",
-          textTransform: "uppercase",
-        }}
-      >
-        ← Back
-      </Link>
+      <div style={{ marginBottom: "16px" }}>
+        <Breadcrumb
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Results" },
+          ]}
+        />
+      </div>
 
       <div
         style={{

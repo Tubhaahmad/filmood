@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 import { useAuth } from "@/components/AuthProvider";
 import { useParticipantId } from "@/lib/useParticipantId";
 import { getAuthHeaders } from "@/lib/getAuthToken";
@@ -236,6 +237,17 @@ export default function GroupResultsPage() {
           alignItems: "center",
         }}
       >
+        {/* Breadcrumb */}
+        <div style={{ marginBottom: "24px", width: "100%" }}>
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Group", href: "/group" },
+              { label: "Results" },
+            ]}
+          />
+        </div>
+
         {/* ───── Hero ───── */}
         <div
           className="lobby-section-1"
