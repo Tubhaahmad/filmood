@@ -57,61 +57,37 @@ export default function LoginPage() {
   const { current, next, fading } = useDynamicBackdrop();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      router.push("/");
-    }
+    if (!authLoading && user) router.push("/");
   }, [user, authLoading, router]);
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
   });
-
   const [fieldErrors, setFieldErrors] = useState<
     Partial<Record<string, string[]>>
   >({});
-
   const [generalError, setGeneralError] = useState<string | null>(null);
-
   const [loading, setLoading] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [navHeight, setNavHeight] = useState(64);
-
-  useEffect(() => {
-    const updateNavHeight = () => {
-      const nav = document.querySelector("nav");
-      if (nav instanceof HTMLElement) {
-        setNavHeight(nav.offsetHeight);
-      }
-    };
-
-    updateNavHeight();
-    window.addEventListener("resize", updateNavHeight);
-    return () => window.removeEventListener("resize", updateNavHeight);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setFieldErrors({});
     setGeneralError(null);
 
     const result = loginSchema.safeParse(formData);
-
     if (!result.success) {
       setFieldErrors(result.error.flatten().fieldErrors);
       return;
     }
 
     setLoading(true);
-
     const { error } = await supabase.auth.signInWithPassword({
       email: result.data.email,
       password: result.data.password,
     });
-
     setLoading(false);
 
     if (error) {
@@ -130,8 +106,127 @@ export default function LoginPage() {
     }`;
 
   return (
-    <main className="flex min-h-screen" style={{ background: "var(--bg)", color: "var(--t1)" }}>
-      <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 py-6 sm:py-8 lg:px-12 lg:py-10">
+    <main
+      className="flex min-h-screen"
+      style={{ background: "var(--bg)", color: "var(--t1)" }}
+    >
+      {/* ── Left: cinematic panel — same as signup ── */}
+      <div className="hidden lg:flex flex-col justify-end flex-1 relative overflow-hidden p-12">
+        {/* Current backdrop */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-opacity duration-800"
+          style={{
+            backgroundImage: `url('${current}')`,
+            opacity: fading ? 0 : 1,
+          }}
+        />
+
+        {/* Next backdrop preloaded underneath */}
+        {next && (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url('${next}')`,
+              opacity: 1,
+              zIndex: -1,
+            }}
+          />
+        )}
+
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(10,10,12,0.94) 0%, rgba(10,10,12,0.45) 50%, rgba(10,10,12,0.18) 100%)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Content — same structure as signup */}
+        <div className="relative z-10">
+          <Link
+            href="/"
+            className="font-serif block mb-8 no-underline"
+            style={{
+              fontSize: "28px",
+              fontWeight: 600,
+              color: "#f0efe8",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            Filmood
+          </Link>
+          <div
+            className="mb-3 text-[11px] font-medium uppercase tracking-[1.5px]"
+            style={{ color: "rgba(240,239,232,0.4)" }}
+          >
+            How films should be found
+          </div>
+          <div
+            className="font-serif mb-5 text-2xl italic leading-relaxed"
+            style={{ color: "rgba(240,239,232,0.9)", maxWidth: "360px" }}
+          >
+            What do you feel like watching tonight?
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              {
+                label: "Cozy and warm",
+                color: "rgba(196,163,90,0.7)",
+                border: "rgba(196,163,90,0.25)",
+              },
+              {
+                label: "On the edge",
+                color: "rgba(212,122,74,0.7)",
+                border: "rgba(212,122,74,0.25)",
+              },
+              {
+                label: "Mind-bending",
+                color: "rgba(91,143,212,0.7)",
+                border: "rgba(91,143,212,0.25)",
+              },
+              {
+                label: "Butterflies",
+                color: "rgba(196,107,124,0.7)",
+                border: "rgba(196,107,124,0.25)",
+              },
+              {
+                label: "Deeply moved",
+                color: "rgba(139,108,196,0.7)",
+                border: "rgba(139,108,196,0.25)",
+              },
+              {
+                label: "Easy and light",
+                color: "rgba(90,170,143,0.7)",
+                border: "rgba(90,170,143,0.25)",
+              },
+            ].map((pill) => (
+              <span
+                key={pill.label}
+                className="rounded-full px-4 py-1.5 text-xs font-medium"
+                style={{
+                  border: `1px solid ${pill.border}`,
+                  color: pill.color,
+                  background: "rgba(255,255,255,0.03)",
+                }}
+              >
+                {pill.label}
+              </span>
+            ))}
+          </div>
+          <p
+            className="mt-5 text-xs leading-relaxed"
+            style={{ color: "rgba(240,239,232,0.3)" }}
+          >
+            Join Filmood and discover films that match your mood, not just your
+            search.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Right: form panel — same structure as signup ── */}
+      <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 py-12 lg:px-12">
         <div className="w-full max-w-100">
           {/* Header */}
           <div className="mb-7">
@@ -153,28 +248,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="flex gap-2 mb-5">
-            {[
-              { label: "Google", icon: "G" },
-              { label: "Facebook", icon: "f" },
-              { label: "Apple", icon: "A" },
-            ].map(({ label, icon }) => (
-              <button
-                key={label}
-                type="button"
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-all hover:brightness-110 cursor-pointer border"
-                style={{
-                  background: "var(--surface)",
-                  borderColor: "var(--border-h)",
-                  color: "var(--t1)",
-                }}
-              >
-                <span className="font-bold">{icon}</span>
-                {label}
-              </button>
-            ))}
-          </div>
-
+          {/* Divider */}
           <div className="flex items-center gap-3 mb-5">
             <div
               className="h-px flex-1"
@@ -192,30 +266,35 @@ export default function LoginPage() {
             />
           </div>
 
-          {generalError && (
-            <div
-              className="mb-5 rounded-xl border px-4 py-3 text-sm"
-              style={{
-                background: "var(--rose-soft)",
-                borderColor: "rgba(196,107,124,0.2)",
-                color: "var(--rose)",
-              }}
-            >
-              {generalError}
-            </div>
-          )}
+          {/* General error */}
+          <div role="alert" aria-live="assertive">
+            {generalError && (
+              <div
+                className="mb-5 rounded-xl border px-4 py-3 text-sm"
+                style={{
+                  background: "var(--rose-soft)",
+                  borderColor: "rgba(196,107,124,0.2)",
+                  color: "var(--rose)",
+                }}
+              >
+                {generalError}
+              </div>
+            )}
+          </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
             <div>
               <label
-                htmlFor="email"
+                htmlFor="login-email"
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "var(--t2)" }}
               >
                 Email address
               </label>
               <input
-                id="email"
+                id="login-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) =>
@@ -235,9 +314,10 @@ export default function LoginPage() {
               )}
             </div>
 
+            {/* Password */}
             <div>
               <label
-                htmlFor="password"
+                htmlFor="login-password"
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "var(--t2)" }}
               >
@@ -245,7 +325,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <input
-                  id="password"
+                  id="login-password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={(e) =>
@@ -258,6 +338,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent text-sm"
                   style={{ color: "var(--t3)" }}
                 >
@@ -274,13 +355,15 @@ export default function LoginPage() {
               )}
             </div>
 
+            {/* Remember me + forgot password */}
             <div className="flex items-center justify-between pt-0.5">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded cursor-pointer accent-(--gold)"
+                  className="w-4 h-4 rounded cursor-pointer"
+                  style={{ accentColor: "var(--gold)" }}
                 />
                 <span className="text-xs" style={{ color: "var(--t2)" }}>
                   Remember me
@@ -295,7 +378,7 @@ export default function LoginPage() {
               </a>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
