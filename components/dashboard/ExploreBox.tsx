@@ -32,7 +32,12 @@ const exploreItems = [
 export default function ExploreBox({ onExpand, isExpanded }: ExploreBoxProps) {
   return (
     <section
+      role="button"
+      tabIndex={0}
       onClick={onExpand}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onExpand(); } }}
+      aria-expanded={isExpanded}
+      aria-label="Discover together — group sessions and curated picks"
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",
@@ -95,6 +100,8 @@ export default function ExploreBox({ onExpand, isExpanded }: ExploreBoxProps) {
             key={item.title}
             onClick={onExpand}
             className="group cursor-pointer"
+            disabled={!item.active}
+            aria-disabled={!item.active}
             style={{
               display: "flex",
               alignItems: "center",

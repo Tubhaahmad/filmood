@@ -64,7 +64,8 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
       {/* Search Input */}
       <div className="relative flex items-center">
         <svg
-          className="absolute left-4 text-gray-400 w-5 h-5 pointer-events-none"
+          className="absolute left-4 w-5 h-5 pointer-events-none"
+          style={{ color: "var(--t3)" }}
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
@@ -80,7 +81,11 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholders[filter]}
-          className="w-full bg-white/10 border border-white/10 text-white placeholder-gray-500 rounded-xl py-3 pl-12 pr-10 text-base focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-200"
+          aria-label={`Search by ${filter}`}
+          className="w-full rounded-xl py-3 pl-12 pr-10 text-base transition-all duration-200"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--t1)", outline: "none" }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gold)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--gold-soft)"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "none"; }}
         />
         {/* Clear button */}
         {query && (
@@ -89,7 +94,8 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
               setQuery("");
               onResults([]);
             }}
-            className="absolute right-4 text-gray-400 hover:text-white transition-colors"
+            className="absolute right-4 transition-colors"
+            style={{ color: "var(--t3)" }}
             aria-label="Clear search"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -100,7 +106,7 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
         )}
         {/* Loading spinner */}
         {isLoading && !query === false && (
-          <span className="absolute right-4 w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <span className="absolute right-4 w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "var(--border)", borderTopColor: "var(--t1)" }} />
         )}
       </div>
 
@@ -110,11 +116,12 @@ export default function SearchInput({ onResults, onLoading }: SearchInputProps) 
           <button
             key={value}
             onClick={() => setFilter(value)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
-              filter === value
-                ? "bg-white text-black border-white"
-                : "bg-transparent text-gray-400 border-white/20 hover:border-white/50 hover:text-white"
-            }`}
+            className="px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 cursor-pointer"
+            style={{
+              background: filter === value ? "var(--gold)" : "transparent",
+              color: filter === value ? "#0a0a0c" : "var(--t3)",
+              borderColor: filter === value ? "var(--gold)" : "var(--border)",
+            }}
           >
             {label}
           </button>

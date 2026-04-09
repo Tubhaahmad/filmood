@@ -10,8 +10,8 @@ interface WatchProvidersProps {
 export default function WatchProviders({ providers }: WatchProvidersProps) {
   if (!providers || providers.length === 0) {
     return (
-      <div className="w-full bg-gray-800 rounded-lg p-4 flex items-center justify-center">
-        <span className="text-gray-400">
+      <div className="w-full rounded-lg p-4 flex items-center justify-center" style={{ background: "var(--surface2)" }}>
+        <span style={{ color: "var(--t3)" }}>
           No streaming providers found for Norway
         </span>
       </div>
@@ -32,7 +32,7 @@ export default function WatchProviders({ providers }: WatchProvidersProps) {
             className="w-12 h-12 object-contain rounded bg-white shadow mb-1"
             loading="lazy"
           />
-          <span className="text-xs text-center text-white/80 truncate w-full">
+          <span className="text-xs text-center truncate w-full" style={{ color: "var(--t2)" }}>
             {provider.provider_name}
           </span>
         </div>

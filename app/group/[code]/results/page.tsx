@@ -206,7 +206,7 @@ export default function GroupResultsPage() {
     >
       {/* Gold ambient glow — results phase signature */}
       <div
-        aria-hidden
+        aria-hidden="true"
         style={{
           position: "fixed",
           top: "-120px",

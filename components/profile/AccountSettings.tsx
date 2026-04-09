@@ -59,8 +59,9 @@ export default function AccountSettings({ user }: Props) {
           >
             <span className="shrink-0 text-[13px] text-(--t3)">👤</span>
             <div className="min-w-0 flex-1">
-              <div className="mb-0.5 text-[10px] text-(--t3)">Full name</div>
+              <label htmlFor="profile-name" className="mb-0.5 text-[10px] text-(--t3)">Full name</label>
               <input
+                id="profile-name"
                 value={name}
                 readOnly={!editingName}
                 onChange={(e) => setName(e.target.value)}
@@ -69,6 +70,7 @@ export default function AccountSettings({ user }: Props) {
             </div>
             <button
               onClick={() => setEditingName(!editingName)}
+              aria-label={editingName ? "Save name" : "Edit name"}
               className="shrink-0 cursor-pointer border-none bg-transparent text-[11px] font-medium text-(--t3) transition-colors hover:text-(--t1)"
             >
               {editingName ? "Done" : "Edit"}
@@ -87,10 +89,11 @@ export default function AccountSettings({ user }: Props) {
           >
             <span className="shrink-0 text-[13px] text-(--t3)">✉</span>
             <div className="min-w-0 flex-1">
-              <div className="mb-0.5 text-[10px] text-(--t3)">
+              <label htmlFor="profile-email" className="mb-0.5 text-[10px] text-(--t3)">
                 Email address
-              </div>
+              </label>
               <input
+                id="profile-email"
                 value={email}
                 readOnly={!editingEmail}
                 onChange={(e) => setEmail(e.target.value)}
@@ -99,6 +102,7 @@ export default function AccountSettings({ user }: Props) {
             </div>
             <button
               onClick={() => setEditingEmail(!editingEmail)}
+              aria-label={editingEmail ? "Save email" : "Edit email"}
               className="shrink-0 cursor-pointer border-none bg-transparent text-[11px] font-medium text-(--t3) transition-colors hover:text-(--t1)"
             >
               {editingEmail ? "Done" : "Edit"}

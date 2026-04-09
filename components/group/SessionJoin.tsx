@@ -190,6 +190,7 @@ export default function SessionJoin({ initialCode = "" }: SessionJoinProps) {
             value={char}
             onChange={(e) => handleCharChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
+            aria-label={`Session code character ${i + 1} of 6`}
             className="font-sans"
             style={{
               width: "clamp(38px, 12vw, 46px)",
@@ -248,6 +249,7 @@ export default function SessionJoin({ initialCode = "" }: SessionJoinProps) {
             }}
           >
             <label
+              htmlFor="guest-nickname"
               className="font-sans"
               style={{
                 display: "block",
@@ -263,6 +265,7 @@ export default function SessionJoin({ initialCode = "" }: SessionJoinProps) {
               Joining as guest
             </label>
             <input
+              id="guest-nickname"
               type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value.slice(0, 20))}
@@ -288,14 +291,16 @@ export default function SessionJoin({ initialCode = "" }: SessionJoinProps) {
         </div>
       )}
 
-      {error && (
-        <p
-          className="font-sans"
-          style={{ color: "var(--rose)", fontSize: "13px", marginBottom: "12px" }}
-        >
-          {error}
-        </p>
-      )}
+      <div role="alert" aria-live="assertive">
+        {error && (
+          <p
+            className="font-sans"
+            style={{ color: "var(--rose)", fontSize: "13px", marginBottom: "12px" }}
+          >
+            {error}
+          </p>
+        )}
+      </div>
 
       <button
         type="submit"

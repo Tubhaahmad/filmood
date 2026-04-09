@@ -20,23 +20,46 @@ export default function BottomSheet({
   const currentTranslateY = useRef(0);
   const isDragging = useRef(false);
 
-  // Lock body scroll when open
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Lock body scroll when open & manage focus
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      // Focus the sheet itself so screen readers announce the dialog
+      requestAnimationFrame(() => sheetRef.current?.focus());
     } else {
       document.body.style.overflow = "";
+      // Restore focus to the element that opened the sheet
+      previousFocusRef.current?.focus();
     }
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
 
-  // Close on Escape
+  // Close on Escape + focus trap
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") { onClose(); return; }
+      // Focus trap: keep Tab cycling within the sheet
+      if (e.key === "Tab" && sheetRef.current) {
+        const focusable = sheetRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
@@ -108,6 +131,7 @@ export default function BottomSheet({
     <>
       {/* Backdrop */}
       <div
+        aria-hidden="true"
         onClick={onClose}
         style={{
           position: "fixed",
@@ -124,6 +148,10 @@ export default function BottomSheet({
       {/* Sheet */}
       <div
         ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Panel"
+        tabIndex={-1}
         style={{
           position: "fixed",
           left: 0,

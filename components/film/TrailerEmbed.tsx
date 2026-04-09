@@ -10,8 +10,8 @@ interface TrailerEmbedProps {
 export default function TrailerEmbed({ trailer }: TrailerEmbedProps) {
   if (!trailer || trailer.site !== "YouTube") {
     return (
-      <div className="w-full aspect-video bg-gray-800 flex items-center justify-center rounded-lg">
-        <span className="text-gray-400">No trailer available</span>
+      <div className="w-full aspect-video flex items-center justify-center rounded-lg" style={{ background: "var(--surface2)" }}>
+        <span style={{ color: "var(--t3)" }}>No trailer available</span>
       </div>
     );
   }
