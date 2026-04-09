@@ -391,6 +391,25 @@ function ResultsContent() {
   const [providers, setProviders] = useState<Provider[] | null>(null);
   const [providersLoading, setProvidersLoading] = useState(false);
 
+  // Grid breakpoints via useMediaQuery (inline styles, not CSS classes)
+  // to avoid Tailwind v4 layer conflicts in production
+  const isSmall = useMediaQuery("(max-width: 440px)");
+  const isMedium = useMediaQuery("(max-width: 740px)");
+  const isTablet = useMediaQuery("(max-width: 900px)");
+  const isNarrowDesktop = useMediaQuery("(max-width: 1100px)");
+
+  const gridColumns = isSmall
+    ? "1fr"
+    : isMedium
+      ? "repeat(2, 1fr)"
+      : isTablet
+        ? "repeat(3, 1fr)"
+        : isNarrowDesktop
+          ? "repeat(4, 1fr)"
+          : "repeat(5, 1fr)";
+
+  const gridGap = isSmall || isTablet ? "12px" : isMedium ? "10px" : "14px";
+
   useEffect(() => {
     if (!mood) {
       setLoading(false);
@@ -687,7 +706,15 @@ function ResultsContent() {
             </span>
           </div>
 
-          <div className="results-film-grid">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: gridColumns,
+              gap: gridGap,
+              width: "100%",
+              ...(isSmall ? { maxWidth: "320px", margin: "0 auto" } : {}),
+            }}
+          >
             {restFilms.map((film, i) => (
               <div
                 key={film.id}
@@ -778,38 +805,21 @@ function ResultsContent() {
         </Link>
       </div>
 
-      <style>{`
-        .results-film-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 14px;
-          width: 100%;
-        }
-        @media (max-width: 1100px) {
-          .results-film-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
-        }
-        @media (max-width: 900px) {
-          .results-film-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        }
-        @media (max-width: 740px) {
-          .results-film-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        }
-        @media (max-width: 440px) {
-          .results-film-grid { grid-template-columns: 1fr; gap: 12px; max-width: 320px; margin: 0 auto; }
-        }
-        @media (max-width: 740px) {
-          .results-page-wrapper { padding-left: 16px !important; padding-right: 16px !important; }
-        }
-        @media (max-width: 480px) {
-          .results-page-wrapper { padding-left: 12px !important; padding-right: 12px !important; padding-top: 32px !important; padding-bottom: 40px !important; }
-        }
-      `}</style>
     </>
   );
 }
 
 /* ── Page ── */
 export default function ResultsPage() {
+  const isNarrow = useMediaQuery("(max-width: 740px)");
+  const isPhone = useMediaQuery("(max-width: 480px)");
+
+  const wrapperPadding = isPhone
+    ? "32px 12px 40px"
+    : isNarrow
+      ? "48px 16px 60px"
+      : "48px 28px 60px";
+
   return (
     <main
       style={{
@@ -839,14 +849,13 @@ export default function ResultsPage() {
       />
 
       <div
-        className="results-page-wrapper"
         style={{
           position: "relative",
           zIndex: 1,
           maxWidth: "1400px",
           width: "100%",
           margin: "0 auto",
-          padding: "48px 28px 60px",
+          padding: wrapperPadding,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
