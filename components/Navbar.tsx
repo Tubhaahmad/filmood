@@ -72,6 +72,7 @@ export default function Navbar() {
       <div className="hidden md:flex items-center gap-2.5">
         <button
           onClick={toggleTheme}
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
           className="flex items-center justify-center cursor-pointer"
           style={{
             width: "34px",
@@ -187,6 +188,7 @@ export default function Navbar() {
         >
           <button
             onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
             className="cursor-pointer"
             style={{
               fontSize: "14px",

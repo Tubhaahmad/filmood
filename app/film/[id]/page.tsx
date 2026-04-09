@@ -364,9 +364,10 @@ export default async function FilmDetailPage({
 
           {/* Info column*/}
           <div className="fd-info">
-            {/* Mobile only: title + meta */}
-            <div className="fd-mobile-header" style={{ marginBottom: "16px" }}>
-              <h1
+            {/* Title — desktop only (aria-hidden to avoid duplicate h1 for screen readers) */}
+            <div className="fd-desktop-title" aria-hidden="true" style={{ marginBottom: "8px" }}>
+              <p
+                role="presentation"
                 className="font-serif"
                 style={{
                   fontSize: "clamp(22px, 5vw, 32px)",
@@ -378,16 +379,28 @@ export default async function FilmDetailPage({
                 }}
               >
                 {detail.title}
-              </h1>
-              <div
+              </p>
+            </div>
+
+            {/* Meta row — desktop only */}
+            <div
+              className="fd-desktop-meta"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+                marginBottom: "16px",
+              }}
+            >
+              <span
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
                   flexWrap: "wrap",
                   marginBottom: "12px",
-                }}
-              >
+                }} >
                 <span
                   style={{
                     display: "inline-flex",
@@ -400,8 +413,8 @@ export default async function FilmDetailPage({
                     fontSize: "12px",
                     fontWeight: 700,
                     color: "var(--gold)",
-                  }}
-                >
+                  }} 
+                  >
                   ★ {detail.vote_average?.toFixed(1)}
                 </span>
                 <span style={{ fontSize: "12px", color: "var(--t2)" }}>
@@ -412,7 +425,7 @@ export default async function FilmDetailPage({
                     {detail.runtime} min
                   </span>
                 )}
-              </div>
+              </span>
               <div
                 style={{
                   display: "flex",

@@ -248,7 +248,7 @@ function BrowseContent() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <main style={{ minHeight: "100vh", background: "var(--bg)" }}>
       {/* Hero header area with blue atmosphere */}
       <div
         style={{
@@ -304,6 +304,8 @@ function BrowseContent() {
               style={{ color: "var(--t3)", textDecoration: "none", transition: "color 0.15s" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--t1)")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "var(--t3)")}
+              onFocus={(e) => (e.currentTarget.style.color = "var(--t1)")}
+              onBlur={(e) => (e.currentTarget.style.color = "var(--t3)")}
             >
               Home
             </Link>
@@ -451,6 +453,12 @@ function BrowseContent() {
                     (e.currentTarget.style.background = "var(--blue-soft)")
                   }
                   onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "var(--surface3)")
+                  }
+                  onFocus={(e) =>
+                    (e.currentTarget.style.background = "var(--blue-soft)")
+                  }
+                  onBlur={(e) =>
                     (e.currentTarget.style.background = "var(--surface3)")
                   }
                   aria-label="Clear search"
@@ -602,9 +610,9 @@ function BrowseContent() {
               gap: "8px",
             }}
           >
-            <span style={{ fontSize: "12px", color: "var(--t3)" }}>
+            <label htmlFor="browse-sort" style={{ fontSize: "12px", color: "var(--t3)" }}>
               Sort by
-            </span>
+            </label>
             <select
               id="browse-sort"
               name="browse-sort"
@@ -784,6 +792,12 @@ function BrowseContent() {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.transform = "none";
               }}
+              onFocus={(e) => {
+                if (page !== 1) e.currentTarget.style.borderColor = "var(--border-h)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M10 3L5 8l5 5" />
@@ -875,6 +889,12 @@ function BrowseContent() {
                 e.currentTarget.style.borderColor = "var(--border)";
                 e.currentTarget.style.transform = "none";
               }}
+              onFocus={(e) => {
+                if (page !== totalPages) e.currentTarget.style.borderColor = "var(--border-h)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 3l5 5-5 5" />
@@ -911,7 +931,7 @@ function BrowseContent() {
           .browse-film-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
         }
       `}</style>
-    </div>
+    </main>
   );
 }
 

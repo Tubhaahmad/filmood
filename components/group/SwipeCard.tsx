@@ -164,6 +164,8 @@ export default function SwipeCard({
 
       {/* Poster */}
       <div
+        role="img"
+        aria-label={`${film.title} poster`}
         style={{
           position: "relative",
           width: "100%",

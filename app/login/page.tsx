@@ -130,93 +130,7 @@ export default function LoginPage() {
     }`;
 
   return (
-    <div
-      className="flex h-dvh overflow-hidden"
-      style={{
-        background: "var(--bg)",
-        color: "var(--t1)",
-        height: `calc(100dvh - ${navHeight}px)`,
-      }}
-    >
-      <div className="hidden lg:flex flex-col justify-end flex-1 relative overflow-hidden p-8 xl:p-12">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-800"
-          style={{
-            backgroundImage: `url('${current}')`,
-            opacity: fading ? 0 : 1,
-          }}
-        />
-
-        {next && (
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url('${next}')`,
-              opacity: 1,
-              zIndex: -1,
-            }}
-          />
-        )}
-
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(10,10,12,0.94) 0%, rgba(10,10,12,0.45) 50%, rgba(10,10,12,0.18) 100%)",
-            zIndex: 1,
-          }}
-        />
-
-        <div className="relative z-10">
-          <Link
-            href="/"
-            className="font-serif block mb-8 no-underline"
-            style={{
-              fontSize: "28px",
-              fontWeight: 600,
-              color: "#f0efe8",
-              letterSpacing: "-0.3px",
-            }}
-          >
-            Filmood
-          </Link>
-          <div
-            className="mb-3 text-[11px] font-medium uppercase tracking-[1.5px]"
-            style={{ color: "rgba(240,239,232,0.4)" }}
-          >
-            How films should be found
-          </div>
-          <blockquote
-            className="font-serif mb-3 text-2xl italic leading-relaxed"
-            style={{ color: "rgba(240,239,232,0.9)", maxWidth: "360px" }}
-          >
-            &ldquo;I think we all have empathy. We may not have enough courage
-            to display it.&rdquo;
-          </blockquote>
-          <p
-            className="mb-5 text-sm font-medium"
-            style={{ color: "rgba(240,239,232,0.45)" }}
-          >
-            — Maya Angelou
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {["Feel something", "Find a film", "Watch tonight"].map((label) => (
-              <span
-                key={label}
-                className="rounded-full px-4 py-1.5 text-xs font-medium"
-                style={{
-                  border: "1px solid rgba(196,163,90,0.25)",
-                  color: "rgba(196,163,90,0.7)",
-                  background: "rgba(255,255,255,0.03)",
-                }}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-
+    <main className="flex min-h-screen" style={{ background: "var(--bg)", color: "var(--t1)" }}>
       <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 py-6 sm:py-8 lg:px-12 lg:py-10">
         <div className="w-full max-w-100">
           {/* Header */}
@@ -415,6 +329,6 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

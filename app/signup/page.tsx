@@ -134,18 +134,14 @@ export default function SignupPage() {
     }`;
 
   return (
-    <div
-      className="flex h-dvh overflow-hidden"
-      style={{
-        background: "var(--bg)",
-        color: "var(--t1)",
-        height: `calc(100dvh - ${navHeight}px)`,
-      }}
+    <main
+      className="flex min-h-screen"
+      style={{ background: "var(--bg)", color: "var(--t1)" }}
     >
       {/* ── Left: cinematic panel ── */}
       <div className="hidden lg:flex flex-col justify-end flex-1 relative overflow-hidden p-12">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-[800ms]"
+          className="absolute inset-0 bg-cover bg-center transition-opacity duration-800"
           style={{
             backgroundImage: `url('${current}')`,
             opacity: fading ? 0 : 1,
@@ -257,7 +253,7 @@ export default function SignupPage() {
 
       {/* ── Right: form panel ── */}
       <div className="flex flex-1 items-center justify-center overflow-y-auto px-5 py-12 lg:px-12">
-        <div className="w-full max-w-[400px]">
+        <div className="w-full max-w-100">
           {/* Header */}
           <div className="mb-7">
             <h1
@@ -293,30 +289,34 @@ export default function SignupPage() {
           )}
 
           {/* General error */}
-          {generalError && (
-            <div
-              className="mb-5 rounded-xl border px-4 py-3 text-sm"
-              style={{
-                background: "var(--rose-soft)",
-                borderColor: "rgba(196,107,124,0.2)",
-                color: "var(--rose)",
-              }}
-            >
-              {generalError}
-            </div>
-          )}
+          <div role="alert" aria-live="assertive">
+            {generalError && (
+              <div
+                className="mb-5 rounded-xl border px-4 py-3 text-sm"
+                style={{
+                  background: "var(--rose-soft)",
+                  borderColor: "rgba(196,107,124,0.2)",
+                  color: "var(--rose)",
+                }}
+              >
+                {generalError}
+              </div>
+            )}
+          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
               <label
+                htmlFor="signup-name"
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "var(--t2)" }}
               >
                 Full name
               </label>
               <input
+                id="signup-name"
                 type="text"
                 value={formData.name}
                 onChange={(e) =>
@@ -339,12 +339,14 @@ export default function SignupPage() {
             {/* Email */}
             <div>
               <label
+                htmlFor="signup-email"
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "var(--t2)" }}
               >
                 Email address
               </label>
               <input
+                id="signup-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) =>
@@ -367,6 +369,7 @@ export default function SignupPage() {
             {/* Password */}
             <div>
               <label
+                htmlFor="signup-password"
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "var(--t2)" }}
               >
@@ -374,6 +377,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <input
+                  id="signup-password"
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
                   onChange={(e) =>
@@ -386,6 +390,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent text-sm"
                   style={{ color: "var(--t3)" }}
                 >
@@ -405,6 +410,7 @@ export default function SignupPage() {
             {/* Confirm password */}
             <div>
               <label
+                htmlFor="signup-confirm-password"
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "var(--t2)" }}
               >
@@ -412,6 +418,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <input
+                  id="signup-confirm-password"
                   type={showConfirm ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={(e) =>
@@ -427,6 +434,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
+                  aria-label={showConfirm ? "Hide password confirmation" : "Show password confirmation"}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer border-none bg-transparent text-sm"
                   style={{ color: "var(--t3)" }}
                 >
@@ -477,6 +485,6 @@ export default function SignupPage() {
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

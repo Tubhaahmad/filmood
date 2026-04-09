@@ -105,7 +105,7 @@ export default function RecentGroupSessions() {
 
   return (
     <div
-      className="mb-4 rounded-2xl border p-[22px]"
+      className="mb-4 rounded-2xl border p-5.5"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       {/* Section label */}
@@ -136,18 +136,10 @@ export default function RecentGroupSessions() {
           >
             {/* Poster */}
             <div
-              className="shrink-0 rounded-[7px]"
-              style={{
-                width: "42px",
-                minWidth: "42px",
-                height: "60px",
-                backgroundImage: `url('${session.posterUrl}')`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-                backgroundClip: "border-box",
-                backgroundColor: "var(--surface3)",
-              }}
+              role="img"
+              aria-label={`${session.filmTitle} poster`}
+              className="h-15 w-10.5 shrink-0 rounded-[7px] bg-(--surface3) bg-cover bg-center"
+              style={{ backgroundImage: `url('${session.posterUrl}')` }}
             />
 
             {/* Info + badge — stacked vertically so badge never overlaps */}

@@ -21,7 +21,12 @@ export default function MoodBox({
 }: MoodBoxProps) {
   return (
     <section
+      role="button"
+      tabIndex={0}
       onClick={onExpand}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onExpand(); } }}
+      aria-expanded={isExpanded}
+      aria-label="Pick your mood — select how you want to feel"
       className="relative overflow-hidden cursor-pointer"
       style={{
         background: "var(--surface)",

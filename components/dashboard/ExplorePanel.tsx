@@ -366,6 +366,7 @@ export default function ExplorePanel({ isOpen, onClose, embedded }: ExplorePanel
 
             <div className="flex gap-2 w-full" style={{ maxWidth: "300px" }}>
               <input
+                aria-label="Session code"
                 type="text"
                 value={joinCode}
                 onChange={(e) => {

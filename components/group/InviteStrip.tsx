@@ -47,6 +47,7 @@ export default function InviteStrip({ code }: InviteStripProps) {
     <div className="flex flex-col items-center">
       <button
         onClick={handleCopyCode}
+        aria-label="Copy session code"
         className="cursor-pointer"
         style={{
           fontFamily: "monospace",
