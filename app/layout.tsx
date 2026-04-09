@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import AuthProvider from "../components/AuthProvider";
 import { Lora, Plus_Jakarta_Sans } from "next/font/google";
 import StickyHeader from "@/components/dashboard/StickyHeader";
@@ -48,6 +48,7 @@ export default function RootLayout({
           <StickyHeader />
 
           {children}
+          <Footer />
         </AuthProvider>
       </body>
     </html>
