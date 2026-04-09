@@ -27,9 +27,20 @@ const TABS: {
     label: "Trending",
     heading: "Trending today",
     icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-      </svg>
+      <span style={{ color: "var(--ember)", display: "flex" }}>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+      </span>
     ),
   },
   {
@@ -37,9 +48,20 @@ const TABS: {
     label: "Top Rated",
     heading: "Top rated of all time",
     icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
+      <span style={{ color: "var(--gold)", display: "flex" }}>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      </span>
     ),
   },
   {
@@ -47,10 +69,21 @@ const TABS: {
     label: "New Releases",
     heading: "New releases",
     icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </svg>
+      <span style={{ color: "var(--blue)", display: "flex" }}>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </span>
     ),
   },
   {
@@ -58,12 +91,23 @@ const TABS: {
     label: "In Cinemas",
     heading: "Now in cinemas (Norway)",
     icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-        <line x1="7" y1="2" x2="7" y2="22" />
-        <line x1="17" y1="2" x2="17" y2="22" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-      </svg>
+      <span style={{ color: "var(--rose)", display: "flex" }}>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+          <line x1="7" y1="2" x2="7" y2="22" />
+          <line x1="17" y1="2" x2="17" y2="22" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+        </svg>
+      </span>
     ),
   },
   {
@@ -71,14 +115,25 @@ const TABS: {
     label: "By Genre",
     heading: "Browse by genre",
     icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <line x1="8" y1="6" x2="21" y2="6" />
-        <line x1="8" y1="12" x2="21" y2="12" />
-        <line x1="8" y1="18" x2="21" y2="18" />
-        <line x1="3" y1="6" x2="3.01" y2="6" />
-        <line x1="3" y1="12" x2="3.01" y2="12" />
-        <line x1="3" y1="18" x2="3.01" y2="18" />
-      </svg>
+      <span style={{ color: "var(--violet)", display: "flex" }}>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="8" y1="6" x2="21" y2="6" />
+          <line x1="8" y1="12" x2="21" y2="12" />
+          <line x1="8" y1="18" x2="21" y2="18" />
+          <line x1="3" y1="6" x2="3.01" y2="6" />
+          <line x1="3" y1="12" x2="3.01" y2="12" />
+          <line x1="3" y1="18" x2="3.01" y2="18" />
+        </svg>
+      </span>
     ),
   },
   {
@@ -86,10 +141,21 @@ const TABS: {
     label: "Streaming in Norway",
     heading: "Streaming in Norway",
     icon: (
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polygon points="10 8 16 12 10 16 10 8" />
-      </svg>
+      <span style={{ color: "var(--teal)", display: "flex" }}>
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="10 8 16 12 10 16 10 8" />
+        </svg>
+      </span>
     ),
   },
 ];
@@ -134,13 +200,23 @@ function BrowseContent() {
   const searchParams = useSearchParams();
 
   // Read initial state from URL params (from SearchPanel "Full search" link)
-  const validCategories: BrowseCategory[] = ["trending", "top-rated", "new-releases", "in-cinemas", "by-genre", "streaming-norway"];
+  const validCategories: BrowseCategory[] = [
+    "trending",
+    "top-rated",
+    "new-releases",
+    "in-cinemas",
+    "by-genre",
+    "streaming-norway",
+  ];
   const categoryParam = searchParams.get("category");
-  const initialCategory: BrowseCategory = validCategories.includes(categoryParam as BrowseCategory)
+  const initialCategory: BrowseCategory = validCategories.includes(
+    categoryParam as BrowseCategory,
+  )
     ? (categoryParam as BrowseCategory)
     : "trending";
   const genreParam = Number(searchParams.get("genre"));
-  const initialGenre = Number.isFinite(genreParam) && genreParam > 0 ? genreParam : null;
+  const initialGenre =
+    Number.isFinite(genreParam) && genreParam > 0 ? genreParam : null;
   const initialQuery = searchParams.get("q") || "";
 
   const [activeTab, setActiveTab] = useState<BrowseCategory>(initialCategory);
@@ -487,9 +563,7 @@ function BrowseContent() {
                       : "var(--tag-border)",
                     background: isActive ? "var(--blue-soft)" : "var(--tag-bg)",
                     color: isActive ? "var(--blue)" : "var(--t2)",
-                    boxShadow: isActive
-                      ? "0 0 12px var(--blue-glow)"
-                      : "none",
+                    boxShadow: isActive ? "0 0 12px var(--blue-glow)" : "none",
                     whiteSpace: "nowrap",
                   }}
                   onMouseEnter={(e) => {
@@ -549,9 +623,7 @@ function BrowseContent() {
                         ? "var(--blue-soft)"
                         : "var(--tag-bg)",
                       color: isActive ? "var(--blue)" : "var(--t3)",
-                      boxShadow: isActive
-                        ? "0 0 8px var(--blue-glow)"
-                        : "none",
+                      boxShadow: isActive ? "0 0 8px var(--blue-glow)" : "none",
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
@@ -784,7 +856,16 @@ function BrowseContent() {
                 e.currentTarget.style.borderColor = "var(--border)";
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M10 3L5 8l5 5" />
               </svg>
             </button>
@@ -810,8 +891,7 @@ function BrowseContent() {
                     width: "38px",
                     height: "38px",
                     borderRadius: "10px",
-                    background:
-                      page === p ? "var(--blue)" : "var(--surface)",
+                    background: page === p ? "var(--blue)" : "var(--surface)",
                     border:
                       page === p
                         ? "1px solid transparent"
@@ -881,7 +961,16 @@ function BrowseContent() {
                 e.currentTarget.style.borderColor = "var(--border)";
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M6 3l5 5-5 5" />
               </svg>
             </button>
