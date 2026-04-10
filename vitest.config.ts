@@ -4,11 +4,15 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    // Default to node; jsdom is opt-in per folder so existing lib tests stay fast
+    // Default node; opt into jsdom per-file via /** @vitest-environment jsdom */.
     environment: "node",
-    // Per-file environment is set via /** @vitest-environment jsdom */ docblocks.
-    // Existing lib/__tests__/*.test.ts files stay on the node default.
     setupFiles: ["./tests/setup.ts"],
+    // Excludes tests/e2e/ (Playwright specs use a different runner).
+    include: [
+      "lib/__tests__/**/*.test.{ts,tsx}",
+      "app/__tests__/**/*.test.{ts,tsx}",
+      "components/__tests__/**/*.test.{ts,tsx}",
+    ],
   },
   resolve: {
     alias: {
