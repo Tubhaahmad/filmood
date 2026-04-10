@@ -1,20 +1,56 @@
 # Filmood
 
-**The movie is a mood.**
+**Tell Filmood how you want to feel. It tells you what to watch — alone or as a group.**
+
+Filmood is a film discovery and decision-making web app that starts from the user's emotional state rather than from content catalogs. Users pick a mood, and Filmood returns films that match it. The app supports both solo discovery and a real-time group session where several people swipe on a shared film deck and the app picks a winner based on everyone's votes.
+
+**Live:** [filmood.app](https://filmood-three.vercel.app/)
+
+**Course:** Agency 2 (FM2AJA205) — Noroff
+
+---
+
+## Features
+
+### Solo experience
+
+- **Mood-based discovery.** Pick one or more moods (laugh, escape, cry, thrilling, thoughtful, and six more) and get a curated film list from TMDB. Refine by runtime, language, or excluded genres.
+- **Search and browse.** Search films by title, actor, or director. Browse by category (trending, top rated, new releases, in cinemas, by genre, streaming in Norway).
+- **Film details.** Full cast, Norwegian streaming providers, YouTube trailer, overview, and metadata for every film.
+- **Watchlist.** Save films to a personal watchlist (w.i.p.).
+- **Guest-friendly.** Everything except the watchlist works without an account. A gentle prompt appears when a feature needs one.
+
+### Group sessions
+
+- **Create a session.** One person (the host) creates a session and shares a 6-character code.
+- **Join with a nickname.** Guests can join without creating an account.
+- **Private mood selection.** Each participant picks their moods in private. The app merges everyone's picks into a balanced 15-film deck.
+- **Swipe deck.** Everyone swipes yes / no / maybe on the shared deck with real-time updates via Supabase Realtime.
+- **Ranked results.** The app aggregates votes into three tiers — Perfect Match, Strong Contenders, and Not Tonight — and picks a Top Pick.
+
+### Design
+
+- **Dual theme.** Full dark and light themes built on CSS custom properties. The theme toggle is accessible and hydration-safe.
+- **Responsive.** Works on desktop, tablet, and mobile with a bottom-sheet pattern on small screens.
+- **v9 design system.** Lora (serif) for headings, Plus Jakarta Sans for body. Six accent color families map to moods and phases of the app.
 
 ---
 
 ## Tech Stack
 
-| Tool | Purpose |
-|------|---------|
-| **Next.js 14** (App Router) | Framework — file-based routing, server-side rendering, API routes |
-| **React 18** + TypeScript | UI components with type safety |
-| **Tailwind CSS** | Utility-first styling |
-| **TMDB API** | All movie data: titles, genres, posters, trailers, cast, streaming providers |
-| **NextAuth.js** | Authentication — signup, login, session management |
-| **Supabase** | PostgreSQL database — accounts, watchlists, group sessions |
-| **Vercel** | Hosting — auto-deploys on push to main |
+| Tool | Version | Purpose |
+|------|---------|---------|
+| Next.js | 16.1.6 | App Router, server-side rendering, API routes |
+| React | 19.2.3 | UI library |
+| TypeScript | 5.x | Type safety (strict mode) |
+| Tailwind CSS | 4.x | Utility styling (used alongside CSS custom properties) |
+| Supabase | 2.99.1 | Authentication, PostgreSQL, Realtime |
+| Zod | 4.3.6 | Form validation |
+| TMDB API | v3 | Movie data (discover, search, details, providers, trailers) |
+| Vitest | 4.1.3 | Unit and component tests |
+| React Testing Library | 16.3.2 | Component rendering and interaction tests |
+| Playwright | 1.59.1 | End-to-end tests |
+| Vercel | — | Hosting, auto-deploys from `main` |
 
 ---
 
@@ -22,283 +58,203 @@
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 20 or higher (Next.js 16 dropped Node 18 support)
+- npm
 - A [TMDB API key](https://www.themoviedb.org/settings/api) (free)
 - A [Supabase project](https://supabase.com) (free tier)
 
-### Setup
+### Installation
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/sergiu-sa/filmood.git
+git clone https://github.com/Tubhaahmad/filmood.git
 cd filmood
-
-# 2. Install dependencies
 npm install
-
-# 3. Create environment file
-cp .env.example .env.local
-
-# 4. Fill in your keys in .env.local (see below)
-
-# 5. Run the dev server
-npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Environment variables
 
-### Environment Variables
+Copy `.env.example` to `.env.local` and fill in the values. The `.env.local` file is gitignored and must never be committed.
 
-Create a `.env.local` file in the root (never commit this file):
+```bash
+cp .env.example .env.local
+```
+
+The required variables are:
 
 ```env
-# TMDB
-TMDB_API_KEY=your_tmdb_api_key_here
-
-# Supabase
+# Supabase — get these from your Supabase project settings
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# NextAuth
-NEXTAUTH_SECRET=generate_with_openssl_rand_base64_32
+# TMDB — get this from themoviedb.org/settings/api
+TMDB_API_KEY=your_tmdb_api_key
+
+# NextAuth — only used for secret generation, auth runs through Supabase directly
+NEXTAUTH_SECRET=generate_with_openssl
 NEXTAUTH_URL=http://localhost:3000
 ```
 
-To generate NEXTAUTH_SECRET:
+Generate the NextAuth secret with:
 
 ```bash
 openssl rand -base64 32
 ```
 
----
+### Database setup
 
-## Project Structure
+Run the SQL migrations in `supabase/migrations/` against your Supabase project in order:
 
-```bash
-src/
-├── app/                            # Next.js App Router pages
-│   ├── page.tsx                    # Landing page
-│   ├── layout.tsx                  # Root layout (SessionProvider, Navbar, fonts)
-│   ├── globals.css                 # Global styles + Tailwind + CSS variables
-│   ├── mood/
-│   │   └── page.tsx                # Mood selection (core UX)
-│   ├── results/
-│   │   └── page.tsx                # Film results grid
-│   ├── film/
-│   │   └── [id]/
-│   │       └── page.tsx            # Film detail (dynamic route)
-│   ├── login/
-│   │   └── page.tsx                # Login form
-│   ├── signup/
-│   │   └── page.tsx                # Create account
-│   ├── watchlist/
-│   │   └── page.tsx                # Saved films (protected)
-│   ├── profile/
-│   │   └── page.tsx                # User profile (protected)
-│   ├── group/                      # Stage 2: Group sessions
-│   │   ├── page.tsx                # Create or join session
-│   │   └── [code]/
-│   │       ├── page.tsx            # Lobby
-│   │       ├── mood/
-│   │       │   └── page.tsx        # Private mood selection
-│   │       ├── swipe/
-│   │       │   └── page.tsx        # Swipe deck
-│   │       └── results/
-│   │           └── page.tsx        # Group results
-│   └── api/
-│       ├── auth/
-│       │   └── [...nextauth]/
-│       │       └── route.ts        # NextAuth handler
-│       ├── movies/
-│       │   ├── discover/
-│       │   │   └── route.ts        # Mood → TMDB discover
-│       │   └── [id]/
-│       │       ├── route.ts        # Film detail
-│       │       ├── providers/
-│       │       │   └── route.ts    # Norwegian streaming providers
-│       │       └── trailer/
-│       │           └── route.ts    # YouTube trailer key
-│       ├── watchlist/
-│       │   ├── route.ts            # GET user watchlist
-│       │   ├── add/
-│       │   │   └── route.ts        # POST add film
-│       │   └── remove/
-│       │       └── route.ts        # DELETE remove film
-│       └── group/                  # Stage 2 API routes
-│           ├── create/
-│           │   └── route.ts        # Create session
-│           ├── join/
-│           │   └── route.ts        # Join session
-│           └── [code]/
-│               ├── status/
-│               │   └── route.ts    # Session status
-│               ├── mood/
-│               │   └── route.ts    # Save participant moods
-│               ├── deck/
-│               │   └── route.ts    # Generate shared deck
-│               ├── swipe/
-│               │   └── route.ts    # Save vote
-│               └── results/
-│                   └── route.ts    # Calculate results
-├── components/
-│   ├── Navbar.tsx                  # Global navigation
-│   ├── MoodCard.tsx                # Single mood card
-│   ├── MoodSelector.tsx            # Mood grid + selection logic
-│   ├── FilmCard.tsx                # Movie card (poster, title, info)
-│   ├── FilmGrid.tsx                # Responsive grid of FilmCards
-│   ├── TrailerEmbed.tsx            # YouTube embed
-│   ├── WatchProviders.tsx          # Streaming platform logos
-│   ├── WatchlistButton.tsx         # Add/remove/guest prompt
-│   ├── AuthGuard.tsx               # Protected route wrapper
-│   ├── LoadingState.tsx            # Skeleton / spinner
-│   ├── ErrorState.tsx              # Error message + retry
-│   ├── EmptyState.tsx              # Empty content + CTA
-│   ├── MobileMenu.tsx              # Hamburger menu overlay
-│   ├── CreateSession.tsx           # Stage 2: create session
-│   ├── JoinSession.tsx             # Stage 2: join session
-│   ├── ParticipantList.tsx         # Stage 2: live participant list
-│   ├── SwipeCard.tsx               # Stage 2: swipe card
-│   ├── SwipeDeck.tsx               # Stage 2: card stack
-│   ├── GroupResultCard.tsx         # Stage 2: result card
-│   └── SessionStatus.tsx           # Stage 2: session state
-├── config/
-│   └── moods.ts                    # Mood-to-TMDB mapping (the core algorithm)
-├── lib/
-│   ├── tmdb.ts                     # TMDB API helper functions
-│   ├── supabase.ts                 # Supabase client
-│   ├── auth.ts                     # NextAuth configuration
-│   └── groupLogic.ts              # Stage 2: mood merging + score calc
-└── types/
-    └── index.ts                    # TypeScript interfaces
-```
+1. `000_watchlists.sql` — watchlists table
+2. `001_group_sessions.sql` — sessions, session_participants, swipes tables with RLS and Realtime
+3. `002_add_is_ready.sql` — adds `is_ready` flag to session_participants
 
----
+Run them in the Supabase SQL Editor or via the Supabase CLI. An optional `supabase/seed_group_session.sql` file is included with sample data for testing the group flow locally.
 
-## Git Workflow
+### E2E test user (optional, only if you plan to run Playwright)
 
-We use feature branches and pull requests. Never push directly to `main`.
-
-### Branch naming
-
-```text
-feat/mood-selector       # New feature
-fix/navbar-mobile        # Bug fix
-design/brand-tokens      # Design/styling work
-test/guest-flow-e2e      # Tests
-docs/readme-update       # Documentation
-```
-
-### Workflow
+The Playwright suite logs in as a dedicated Supabase user. To provision it, copy the template and run the seed script:
 
 ```bash
-# 1. Create a branch from main
-git checkout main
-git pull origin main
-git checkout -b feat/your-feature-name
-
-# 2. Work on your feature, commit often
-git add .
-git commit -m "Add mood card component with selected state"
-
-# 3. Push your branch
-git push origin feat/your-feature-name
-
-# 4. Open a Pull Request on GitHub
-#    - Add a description of what you built
-#    - Request a review from a teammate
-#    - Wait for approval before merging
-
-# 5. After merge, clean up
-git checkout main
-git pull origin main
-git branch -d feat/your-feature-name
+cp .env.test.example .env.test.local
+# Edit .env.test.local and pick a strong password
+npm run seed:e2e-user
 ```
 
-### Commit messages
+The seed script is idempotent — running it again when the user already exists is a no-op. `.env.test.local` is gitignored and must never be committed.
 
-Keep them clear and in present tense:
+### Run the dev server
 
-```text
-Add mood selection page with card grid
-Fix trailer embed not loading on mobile
-Update Tailwind config with brand colors
-Add unit tests for mood config mapping
+```bash
+npm run dev
 ```
 
----
-
-## Two-Stage Development
-
-### Stage 1 — MVP (Solo User)
-
-The minimum deliverable. Must ship.
-
-- Full mood flow for guests AND users (no account required to browse)
-- TMDB film discovery based on mood mapping
-- Film detail with trailer, synopsis, cast, Norwegian streaming providers
-- Account system: signup, login, session persistence
-- Watchlist: save, view, remove films
-- Responsive on desktop and mobile
-
-### Stage 2 — Full App (Group Sessions)
-
-Built on top of Stage 1 with no rebuilding.
-
-- Create a session with a shareable code
-- Join as guest (nickname) or user (profile)
-- Private mood selection per participant
-- Shared swipe deck: Yes / No / Maybe voting
-- Real-time lobby updates via Supabase
-- Group results: Perfect Match, Strong Contenders, Not Tonight
-
----
-
-## Database (Supabase)
-
-### Stage 1 Tables
-
-**users** — auto-managed by NextAuth + Supabase Auth (do not create manually)
-
-**watchlists**
-
-| Column | Type | Notes |
-|--------|------|-------|
-| id | UUID (PK) | Auto-generated |
-| user_id | UUID (FK → users) | |
-| movie_id | INT | TMDB movie ID |
-| movie_title | TEXT | |
-| poster_path | TEXT | TMDB poster URL path |
-| added_at | TIMESTAMP | Default: now() |
-
-Unique constraint on (user_id, movie_id).
-
-### Stage 2 Tables
-
-**sessions** — one row per group session
-
-**session_participants** — one row per person in a session
-
-**swipes** — one row per vote
+Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
 ## Scripts
 
 ```bash
-npm run dev          # Start dev server (localhost:3000)
-npm run build        # Production build
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run test         # Run Vitest unit tests
-npm run test:e2e     # Run Playwright E2E tests
+# Development
+npm run dev              # Start dev server on localhost:3000
+npm run build            # Production build
+npm run start            # Start production server
+npm run lint             # Run ESLint
+npm run lint:fix         # Auto-fix lint issues
+
+# Unit and component tests (Vitest)
+npm test                 # Run all Vitest suites once
+npm run test:watch       # Watch mode
+
+# End-to-end tests (Playwright)
+npm run test:e2e         # Run Playwright suite (boots dev server automatically)
+npm run test:e2e:ui      # Playwright UI mode
+npm run test:e2e:debug   # Debug mode with inspector
+
+# One-off setup
+npm run seed:e2e-user    # Provision the Supabase user used by the E2E suite
 ```
+
+---
+
+## Project Structure
+
+```
+app/                        # Next.js App Router
+├── layout.tsx              # Root layout (AuthProvider, Navbar, Footer, fonts)
+├── page.tsx                # Dashboard homepage
+├── globals.css             # CSS custom properties, keyframes, global styles
+├── results/                # Solo results page
+├── film/[id]/              # Film detail (server component)
+├── browse/                 # Full browse/search page
+├── login/ · signup/        # Auth pages
+├── watchlist/ · profile/   # Protected pages
+├── group/                  # Group session flow
+│   ├── page.tsx            # Create or join
+│   └── [code]/
+│       ├── page.tsx        # Lobby
+│       ├── mood/           # Private mood selection
+│       ├── swipe/          # Swipe deck
+│       └── results/        # Group results
+└── api/                    # Server-side route handlers
+    ├── movies/             # TMDB proxy routes (discover, search, browse, [id], etc.)
+    ├── watchlist/          # Watchlist CRUD
+    └── group/              # Group session lifecycle + gameplay
+
+components/                 # React components
+├── dashboard/              # MoodBox, SearchBox, ExploreBox, panels, HeroSection
+├── group/                  # Session create/join, lobby, swipe deck, results
+├── film/                   # FilmCard, FilmGrid, WatchProviders, TrailerEmbed
+├── __tests__/              # Component tests (React Testing Library)
+├── Navbar.tsx · Footer.tsx · Breadcrumb.tsx
+└── AuthProvider.tsx · AuthGuard.tsx
+
+lib/
+├── types.ts                # TypeScript interfaces
+├── moodMap.ts              # Mood-to-TMDB parameter mapping
+├── group.ts · group-api.ts # Group session helpers
+├── deck.ts                 # Shared deck builder
+├── supabase.ts · supabase-server.ts  # Supabase clients
+├── getAuthToken.ts         # Fresh JWT helper for API calls
+├── useGroupRealtime.ts · useParticipantId.ts · useMediaQuery.ts
+└── __tests__/              # Unit tests for lib modules and API routes
+
+supabase/
+├── migrations/             # Version-controlled SQL migrations
+└── seed_group_session.sql  # Optional sample data for local group-flow testing
+
+scripts/
+└── seed-e2e-user.ts        # Provisions the Playwright test user via Supabase admin API
+
+tests/
+├── setup.ts                # Vitest global setup
+└── e2e/                    # Playwright end-to-end tests
+    ├── fixtures/           # TMDB mocks, auth helpers
+    └── *.test.ts           # E2E specs
+
+public/                     # Static assets
+```
+
+---
+
+## Architecture Notes
+
+**Authentication runs through Supabase directly.** `AuthProvider` wraps the app in React Context and listens to `supabase.auth.onAuthStateChange`. For API requests, components use `getAuthHeaders()` from `lib/getAuthToken.ts` which calls `supabase.auth.getSession()` at request time to get a fresh JWT — never reading the token from React state, which can hold stale values after Supabase auto-refreshes.
+
+**Group sessions support guest participants.** Most `/api/group/[code]/*` routes are auth-optional. Guests identify themselves with a `participantId` stored in `localStorage`. Authenticated users identify themselves with a Supabase JWT in the `Authorization` header. The shared helpers `resolveSession()` and `resolveParticipant()` in `lib/group-api.ts` handle both paths.
+
+**Realtime with a polling fallback.** The `useGroupRealtime` hook subscribes to Supabase `postgres_changes` on sessions, participants, and swipes. It also polls every 2 seconds as a safety net for unreliable connections. Callbacks are stored in refs so subscriptions don't thrash on every render.
+
+**Optimistic voting.** When a user swipes on a card, the vote is applied to local state immediately. If the POST fails, the vote is retried once after 800ms rather than rolled back — the card is already visually gone and reverting would be jarring. A `Math.max` guard on the card index prevents polling from snapping the deck backwards.
+
+**TMDB API key never reaches the client.** All TMDB calls go through `/api/movies/*` route handlers on the server. The client only ever talks to our own API.
+
+**Tailwind v4 layer workaround.** Custom CSS classes for layout are unreliable in Tailwind v4 production builds because of how layer specificity works. Layout-critical styles use inline `style={}` props, and `useMediaQuery` (hydration-safe) handles responsive breakpoints. CSS classes are reserved for animations and hide/show toggles.
+
+---
+
+## Team
+
+Filmood was built by a team of four for the Noroff Agency 2 course.
+
+| Name | GitHub |
+|------|--------|
+| Thuba Ahmad | [@Tubhaahmad](https://github.com/Tubhaahmad) |
+| Muhammad Khan | [@Hammadniazi](https://github.com/Hammadniazi) |
+| Sergiu Sarbu | [@sergiu-sa](https://github.com/sergiu-sa) |
+| Kasper Poniewierski | [@Arly24h](https://github.com/Arly24h) |
+
+Individual contributions are documented in each team member's reflection report.
 
 ---
 
 ## AI Usage
 
-All AI usage is documented in [AI_LOG.md](./AI_LOG.md) as required by the course assignment brief.
+All AI usage is documented in [`AI_LOG.md`](./AI_LOG.md) as required by the course assignment brief. Per the Noroff AI policy, AI assistance is allowed for brainstorming, explaining concepts, debugging, and placeholder content; but not for generating core application logic without understanding and attribution.
 
-**Allowed:** Brainstorming, explaining concepts, debugging assistance, placeholder text.
-**Not allowed:** Core application logic (TMDB fetching, state management, rendering).
+---
+
+## License
+
+This project is a student submission and is not licensed for commercial use. Movie data is provided by [The Movie Database (TMDB)](https://www.themoviedb.org) — this product uses the TMDB API but is not endorsed or certified by TMDB.
