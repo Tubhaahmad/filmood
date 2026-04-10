@@ -61,7 +61,9 @@ async function fillLoginForm(
 ) {
   const user = userEvent.setup();
   await user.type(screen.getByLabelText(/email address/i), email);
-  await user.type(screen.getByLabelText(/password/i), password);
+  // Anchor the regex — the redesigned page has a "Show password" toggle
+  // button whose aria-label also matches /password/i.
+  await user.type(screen.getByLabelText(/^password$/i), password);
 }
 
 beforeEach(() => {
@@ -80,7 +82,7 @@ describe("LoginPage", () => {
   it("renders the email and password fields", () => {
     render(<LoginPage />);
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
   });
 
   it("renders the submit button with initial text", () => {
