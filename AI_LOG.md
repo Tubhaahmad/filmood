@@ -32,11 +32,24 @@ All AI tool usage for this project is documented here as required by the course 
 
 ---
 
-## Log - Thuba
+## Log - Tubha
 
 | Tool           | Date | Purpose | Outcome |
 | -------------- | ---- | ------- | ------- |
-| Not documented |      |         |         |
+| Claude (Anthropic) |  24 Mar 2026 | Help write a more clean and well structured tailwind.config.ts and global.css for the first version of the Filmood design system |  A well structured token config with, CSS variables, ambient background, keyframes and button component with primary, secondary and ghost variants delivered|
+| Claude (Anthropic)  |4-5 Apr 2026 | Learn how to combine Tailwind utility classes with CSS variables for consistent theming across the profile page components|Developed a clear pattern for theme-aware component styling which I applied across all six profile components|
+| Claude (Anthropic)  |4-6 Apr 2026 |Understand how to structure the AccountSettings component to save name and email using supabase.auth.updateUser()|Built a working AccountSettings component with editable fields and save feedback. Learned how to use the Supabase auth update method from a client component|
+| Claude (Anthropic)  |4-6 Apr 2026 |Needed guidance on structuring placeholder components with clear comments so teammates could easily connect real Supabase data later without needing to understand the full codebase  | Learned how to write components that are production-ready in terms of UI but clearly documented for future backend integration. This improved both my code organisation skills and my ability to communicate intent through comments.|
+| Claude (Anthropic)  | 4-6 Apr 2026 | Needed to understand how to build a bar chart component using only HTML and Tailwind without a charting library, with placeholder data that could later be replaced with real Supabase data. | Learned how to simulate a bar chart using flex layout and percentage-based widths driven by data, and how to apply per-mood accent colours using CSS variables. This deepened my understanding of how to build data-driven UI components without relying on external libraries. |
+| Claude (Anthropic)  | 5 Apr 2026 | Understand how to resolve a merge conflict in Navbar.tsx between two branches that had both modified the file |Resolved the conflict keeping both sets of changes correctly merged|
+| Claude (Anthropic)  | 8 Apr 2026 | Understand and resolve a complex merge conflict in DashboardShell.tsx caused by concurrent changes from multiple team members| Successfully resolved the conflict without losing any team member's work. Gained better understanding of Git merge strategies |
+| Claude (Anthropic)  | 8 Apr 2026 | Debug why sticky positioning on th enavbar and GuestBanner component was not working as expected when scrolling | Learned that sticky positioning does not work reliably on server components. Created a StickyHeader client component wrapper to fix the behaviour|
+| Claude (Anthropic)  | 8 Apr 2026 |Understand how to override button styles based on the active theme using CSS selectors| Learned how [data-theme='light'] selectors work and applied them to fix button visibility in light mode on the film detail page |
+| Claude (Anthropic)  | |Understand how to reuse consistent Tailwind input and form styling patterns across the login page|Learned how to define reusable inputClass helper functions in TypeScript and applied the same pattern across both auth pages  |
+| Claude (Anthropic)  | 9 Apr 2026|Debug why a teammate's login page implementation was not working in deployment  | Identified the cause of the deployment failure, understood the correct fix, and resolved it before submission|
+
+> Throughout this project, I used AI as a collaborative learning tool rather than a code generator. AI helped guide me in the right direction when I was unsure how to approach a problem, suggested patterns and syntax I was unfamiliar with, and helped me debug issues I had already identified myself. In every case, I read and understood the output before applying it, and adapted it to fit the project's specific needs. Working this way helped me learn to structure code more clearly, understand Tailwind and Next.js more deeply, and develop better habits around commit messages, component organisation, and responsive design.
+
 
 ---
 
